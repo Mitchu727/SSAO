@@ -15,7 +15,7 @@ class BaseWindowConfig(WindowConfig):
 
     def __init__(self, **kwargs):
         super(BaseWindowConfig, self).__init__(**kwargs)
-
+        self.wnd.mouse_exclusivity = True
         shaders = get_shaders(self.argv.shader_path)
         self.program = self.ctx.program(vertex_shader=shaders[self.argv.shader_name].vertex_shader,
                                         fragment_shader=shaders[self.argv.shader_name].fragment_shader)
