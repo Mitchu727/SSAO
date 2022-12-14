@@ -1,11 +1,8 @@
 import moderngl
 import numpy as np
-from numpy import dtype
-from pyrr import Matrix44, Vector3, Matrix33, vector, matrix33
+from pyrr import Matrix44, Vector3, vector, matrix33
 
 from base_window import BaseWindowConfig
-
-UP_VECTOR = np.asarray((0.0, 0.0, 1.0))
 
 
 class SSAOWindow(BaseWindowConfig):
@@ -13,12 +10,14 @@ class SSAOWindow(BaseWindowConfig):
         super(SSAOWindow, self).__init__(**kwargs)
         self.camera_pos = Vector3([15.0, 0.0, 0.0])
         self.camera_target = Vector3([-1.0, 0, 0.0])
+        self.camera_up = Vector3([0.0, 0, 1.0])
         self.camera_moving_speed = 0.1
         self.camera_rotation_speed = 0.1
 
     def unicode_char_entered(self, char: str):
         forward = self.camera_target
-        side = vector.normalize(np.cross(self.camera_target, UP_VECTOR))
+        side = vector.normalize(np.cross(forward, self.camera_up))
+        up = vector.normalize(np.cross(side, forward))
 
         if char.lower() == "w":
             self.camera_pos += forward * self.camera_moving_speed
@@ -29,19 +28,22 @@ class SSAOWindow(BaseWindowConfig):
         if char.lower() == "a":
             self.camera_pos -= side * self.camera_moving_speed
         if char.lower() == "q":
-            self.camera_pos += UP_VECTOR * self.camera_moving_speed
+            self.camera_pos += up * self.camera_moving_speed
         if char.lower() == "z":
-            self.camera_pos -= UP_VECTOR * self.camera_moving_speed
+            self.camera_pos -= up * self.camera_moving_speed
         print(f"New camera position: {self.camera_pos}")
 
     def mouse_position_event(self, x, y, dx, dy):
         z_rotation_matrix = matrix33.create_from_z_rotation(np.pi / 180 * self.camera_moving_speed * dx)
 
-        side = vector.normalize(np.cross(self.camera_target, UP_VECTOR))
+        self.camera_target = vector.normalize(matrix33.apply_to_vector(z_rotation_matrix, self.camera_target))
+        self.camera_up = vector.normalize(matrix33.apply_to_vector(z_rotation_matrix, self.camera_up))
+
+        side = vector.normalize(np.cross(self.camera_target, self.camera_up))
         side_rotation = matrix33.create_from_axis_rotation(side, -np.pi / 180 * self.camera_moving_speed * dy)
 
-        self.camera_target = vector.normalize(matrix33.apply_to_vector(z_rotation_matrix, self.camera_target))
         self.camera_target = vector.normalize(matrix33.apply_to_vector(side_rotation, self.camera_target))
+        self.camera_up = vector.normalize(matrix33.apply_to_vector(side_rotation, self.camera_up))
         print(f"New camera vector: {self.camera_target}")
 
     def model_load(self):
@@ -63,7 +65,7 @@ class SSAOWindow(BaseWindowConfig):
         lookat = Matrix44.look_at(
             self.camera_pos,
             self.camera_pos + self.camera_target,
-            UP_VECTOR
+            self.camera_up
         )
 
         # ustawienie kolorów dla danych części ciała
