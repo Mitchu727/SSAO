@@ -54,7 +54,12 @@ class SSAOWindow(BaseWindowConfig):
 
     def init_shaders_variables(self):
         self.transform_matrix = self.program['transform_matrix']  # przekształcenie obiektu pierwotnego
-        self.color = self.program['color']  # przekazywanie koloru do shadera
+        self.object_color = self.program['object_color']  # przekazywanie koloru do shadera
+        self.light_color = self.program['light_color']  # przekazywanie koloru do shadera
+        self.object_shininess = self.program['object_shininess']  # przekazywanie koloru do shadera
+        self.light_strength = self.program['light_strength']  # przekazywanie koloru do shadera
+        self.light_position = self.program['light_position']
+        self.view_position = self.program['view_position']
 
     def render(self, time: float, frame_time: float):
         self.ctx.clear(0.8, 0.8, 0.8, 0.0)
@@ -68,6 +73,13 @@ class SSAOWindow(BaseWindowConfig):
             self.camera_up
         )
 
+
+        self.light_color.value = (0.5, 0.5, 0.5)
+        self.light_position.value = (10.0, 0.0, 0.0)
+        self.light_strength.value = 0.1
+        self.object_shininess.value = 1.0
+        self.view_position = lookat
+
         # ustawienie kolorów dla danych części ciała
         head_color = (1.0, 229 / 255, 180 / 225)
         body_color = (1.0, 215 / 255, 0.0)
@@ -76,14 +88,14 @@ class SSAOWindow(BaseWindowConfig):
 
         # wyświetlenie głowy
         translation = Matrix44.from_translation([0.0, 0.0, 5.0])
-        self.color.value = head_color
+        self.object_color.value = head_color
         self.transform_matrix.write((projection * lookat * translation).astype('f4'))
         self.sphere.render(moderngl.TRIANGLE_STRIP)
 
         # wyświetlenie tułowia
         translation = Matrix44.from_translation([0.0, 0.0, 2.0])
         scaling = Matrix44.from_scale([1.0, 1.0, 2.0])
-        self.color.value = body_color
+        self.object_color.value = body_color
         self.transform_matrix.write((projection * lookat * translation * scaling).astype('f4'))
         self.cube.render(moderngl.TRIANGLE_STRIP)
 
@@ -91,7 +103,7 @@ class SSAOWindow(BaseWindowConfig):
         translation = Matrix44.from_translation([0.0, 3.0, 3.0])
         scaling = Matrix44.from_scale([0.5, 0.5, 1.25])
         rotation = Matrix44.from_x_rotation(-np.pi / 4)
-        self.color.value = arm_color
+        self.object_color.value = arm_color
         self.transform_matrix.write((projection * lookat * translation * rotation * scaling).astype('f4'))
         self.cube.render(moderngl.TRIANGLE_STRIP)
 
@@ -99,7 +111,7 @@ class SSAOWindow(BaseWindowConfig):
         translation = Matrix44.from_translation([0.0, -3.0, 3.0])
         scaling = Matrix44.from_scale([0.5, 0.5, 1.25])
         rotation = Matrix44.from_x_rotation(np.pi / 4)
-        self.color.value = arm_color
+        self.object_color.value = arm_color
         self.transform_matrix.write((projection * lookat * translation * rotation * scaling).astype('f4'))
         self.cube.render(moderngl.TRIANGLE_STRIP)
 
@@ -107,7 +119,7 @@ class SSAOWindow(BaseWindowConfig):
         translation = Matrix44.from_translation([0.0, 2.0, -1.5])
         scaling = Matrix44.from_scale([0.5, 0.5, 1.75])
         rotation = Matrix44.from_x_rotation(-np.pi / 6)
-        self.color.value = leg_color
+        self.object_color.value = leg_color
         self.transform_matrix.write((projection * lookat * translation * rotation * scaling).astype('f4'))
         self.cube.render(moderngl.TRIANGLE_STRIP)
 
@@ -115,6 +127,6 @@ class SSAOWindow(BaseWindowConfig):
         translation = Matrix44.from_translation([0.0, -2.0, -1.5])
         scaling = Matrix44.from_scale([0.5, 0.5, 1.75])
         rotation = Matrix44.from_x_rotation(np.pi / 6)
-        self.color.value = leg_color
+        self.object_color.value = leg_color
         self.transform_matrix.write((projection * lookat * translation * rotation * scaling).astype('f4'))
         self.cube.render(moderngl.TRIANGLE_STRIP)
