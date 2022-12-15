@@ -75,10 +75,10 @@ class SSAOWindow(BaseWindowConfig):
 
 
         self.light_color.value = (0.5, 0.5, 0.5)
-        self.light_position.value = (10.0, 0.0, 0.0)
+        self.light_position.value = (0.0, 10.0, 0.0)
         self.light_strength.value = 0.1
         self.object_shininess.value = 1.0
-        self.view_position = lookat
+        self.view_position.value = self.camera_pos
 
         # ustawienie kolorów dla danych części ciała
         head_color = (1.0, 229 / 255, 180 / 225)

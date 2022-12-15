@@ -22,7 +22,7 @@ void main()
     vec3 diffuse = diff * light_color;
 
     //specular
-    vec3 view_directory = normalize(view_position - frag_position);
+    vec3 view_directory = normalize(frag_position-view_position);
     vec3 reflect_directory = reflect(light_directory, normal_vector);
     //obliczenie iloczynu skalarnego pomiędzy promieniem dochodzącym do obserwatora, a promieniem odbitym
     float spec = pow(max(dot(view_directory, reflect_directory), 0.0), 32);
