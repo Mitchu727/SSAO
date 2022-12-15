@@ -50,15 +50,19 @@ class SSAOWindow(BaseWindowConfig):
         # wczytanie obiektów do późniejszego renderowania
         self.sphere = self.load_scene("sphere.obj").root_nodes[0].mesh.vao.instance(self.program)
         self.cube = self.load_scene("cube.obj").root_nodes[0].mesh.vao.instance(self.program)
-        self.teapot = self.load_scene("teapot.obj").root_nodes[0].mesh.vao.instance(self.program)
+        self.plane = self.load_scene("plane.obj").root_nodes[0].mesh.vao.instance(self.program)
+
+        # tekstury
+        self.wood_texture = self.load_texture_2d("../textures/laminate_floor_02_diff_4k.jpg")
 
     def init_shaders_variables(self):
         self.transform_matrix = self.program['transform_matrix']  # przekształcenie obiektu pierwotnego
         self.color = self.program['color']  # przekazywanie koloru do shadera
+        self.use_texture = self.program['useTexture']
 
     def render(self, time: float, frame_time: float):
-        self.ctx.clear(0.8, 0.8, 0.8, 0.0)
-        self.ctx.enable(moderngl.DEPTH_TEST)
+        self.ctx.clear(1.0, 1.0, 1.0)
+        self.ctx.enable(moderngl.DEPTH_TEST | moderngl.CULL_FACE)
 
         projection = Matrix44.perspective_projection(45.0, self.aspect_ratio, 0.1, 1000.0)
 
@@ -73,6 +77,15 @@ class SSAOWindow(BaseWindowConfig):
         body_color = (1.0, 215 / 255, 0.0)
         arm_color = (0.0, 0x2d / 255, 0x6e / 255)
         leg_color = (0.5, 0.0, 0.0)
+
+        scaling = Matrix44.from_scale([10, 10, 0.1])
+        translation = Matrix44.from_translation([0.0, 0.0, -5.0])
+        self.use_texture.value = True
+        self.wood_texture.use()
+        self.transform_matrix.write((projection * lookat * translation * scaling).astype('f4'))
+        self.cube.render(moderngl.TRIANGLE_STRIP)
+
+        self.use_texture.value = False
 
         # wyświetlenie głowy
         translation = Matrix44.from_translation([0.0, 0.0, 5.0])
