@@ -1,5 +1,6 @@
 import moderngl
 import numpy as np
+from moderngl import Texture, VertexArray
 from pyrr import Matrix44, Vector3, vector, matrix33
 
 from base_window import BaseWindowConfig
@@ -58,14 +59,31 @@ class SSAOWindow(BaseWindowConfig):
     def init_shaders_variables(self):
         self.transform_matrix = self.program['transform_matrix']  # przekształcenie obiektu pierwotnego
         self.color = self.program['color']  # przekazywanie koloru do shadera
-        self.use_texture = self.program['useTexture']
+        self.use_texture = self.program['use_texture']
+
+    def render_vbo(self,
+                   vertex_object: VertexArray,
+                   projection=Matrix44.identity(),
+                   lookat=Matrix44.identity(),
+                   translation=Matrix44.identity(),
+                   rotation=Matrix44.identity(),
+                   scale=Matrix44.identity(),
+                   color=(0., 0., 0.),
+                   texture: Texture = None):
+        self.transform_matrix.write((projection * lookat * translation * rotation * scale).astype('f4'))
+        if texture is None:
+            self.use_texture.value = False
+            self.color.value = color
+        else:
+            self.use_texture.value = True
+            texture.use()
+        vertex_object.render()
 
     def render(self, time: float, frame_time: float):
         self.ctx.clear(1.0, 1.0, 1.0)
         self.ctx.enable(moderngl.DEPTH_TEST | moderngl.CULL_FACE)
 
         projection = Matrix44.perspective_projection(45.0, self.aspect_ratio, 0.1, 1000.0)
-
         lookat = Matrix44.look_at(
             self.camera_pos,
             self.camera_pos + self.camera_target,
@@ -73,61 +91,63 @@ class SSAOWindow(BaseWindowConfig):
         )
 
         # ustawienie kolorów dla danych części ciała
-        head_color = (1.0, 229 / 255, 180 / 225)
-        body_color = (1.0, 215 / 255, 0.0)
         arm_color = (0.0, 0x2d / 255, 0x6e / 255)
         leg_color = (0.5, 0.0, 0.0)
 
-        scaling = Matrix44.from_scale([10, 10, 0.1])
-        translation = Matrix44.from_translation([0.0, 0.0, -5.0])
-        self.use_texture.value = True
-        self.wood_texture.use()
-        self.transform_matrix.write((projection * lookat * translation * scaling).astype('f4'))
-        self.cube.render(moderngl.TRIANGLE_STRIP)
-
-        self.use_texture.value = False
+        self.render_vbo(self.cube,
+                        projection=projection,
+                        lookat=lookat,
+                        translation=Matrix44.from_translation([0.0, 0.0, -5.0]),
+                        scale=Matrix44.from_scale([10, 10, 0.1]),
+                        texture=self.wood_texture)
 
         # wyświetlenie głowy
-        translation = Matrix44.from_translation([0.0, 0.0, 5.0])
-        self.color.value = head_color
-        self.transform_matrix.write((projection * lookat * translation).astype('f4'))
-        self.sphere.render(moderngl.TRIANGLE_STRIP)
+        self.render_vbo(self.sphere,
+                        projection=projection,
+                        lookat=lookat,
+                        translation=Matrix44.from_translation([0.0, 0.0, 5.0]),
+                        color=(1.0, 229 / 255, 180 / 225))
 
         # wyświetlenie tułowia
-        translation = Matrix44.from_translation([0.0, 0.0, 2.0])
-        scaling = Matrix44.from_scale([1.0, 1.0, 2.0])
-        self.color.value = body_color
-        self.transform_matrix.write((projection * lookat * translation * scaling).astype('f4'))
-        self.cube.render(moderngl.TRIANGLE_STRIP)
+        self.render_vbo(self.cube,
+                        projection=projection,
+                        lookat=lookat,
+                        translation=Matrix44.from_translation([0.0, 0.0, 2.0]),
+                        scale=Matrix44.from_scale([1.0, 1.0, 2.0]),
+                        color=(1.0, 215 / 255, 0.0))
 
         # wyświetlenie prawej ręki (po lewej od patrzącego)
-        translation = Matrix44.from_translation([0.0, 3.0, 3.0])
-        scaling = Matrix44.from_scale([0.5, 0.5, 1.25])
-        rotation = Matrix44.from_x_rotation(-np.pi / 4)
-        self.color.value = arm_color
-        self.transform_matrix.write((projection * lookat * translation * rotation * scaling).astype('f4'))
-        self.cube.render(moderngl.TRIANGLE_STRIP)
+        self.render_vbo(self.cube,
+                        projection=projection,
+                        lookat=lookat,
+                        translation=Matrix44.from_translation([0.0, 3.0, 3.0]),
+                        scale=Matrix44.from_scale([0.5, 0.5, 1.25]),
+                        rotation=Matrix44.from_x_rotation(-np.pi / 4),
+                        color=arm_color)
 
         # wyświetlenie lewej ręki (po lewej od patrzącego)
-        translation = Matrix44.from_translation([0.0, -3.0, 3.0])
-        scaling = Matrix44.from_scale([0.5, 0.5, 1.25])
-        rotation = Matrix44.from_x_rotation(np.pi / 4)
-        self.color.value = arm_color
-        self.transform_matrix.write((projection * lookat * translation * rotation * scaling).astype('f4'))
-        self.cube.render(moderngl.TRIANGLE_STRIP)
+        self.render_vbo(self.cube,
+                        projection=projection,
+                        lookat=lookat,
+                        translation=Matrix44.from_translation([0.0, -3.0, 3.0]),
+                        scale=Matrix44.from_scale([0.5, 0.5, 1.25]),
+                        rotation=Matrix44.from_x_rotation(np.pi / 4),
+                        color=arm_color)
 
         # wyświetlenie prawej nogi (po lewej od patrzącego)
-        translation = Matrix44.from_translation([0.0, 2.0, -1.5])
-        scaling = Matrix44.from_scale([0.5, 0.5, 1.75])
-        rotation = Matrix44.from_x_rotation(-np.pi / 6)
-        self.color.value = leg_color
-        self.transform_matrix.write((projection * lookat * translation * rotation * scaling).astype('f4'))
-        self.cube.render(moderngl.TRIANGLE_STRIP)
+        self.render_vbo(self.cube,
+                        projection=projection,
+                        lookat=lookat,
+                        translation=Matrix44.from_translation([0.0, 2.0, -1.5]),
+                        scale=Matrix44.from_scale([0.5, 0.5, 1.75]),
+                        rotation=Matrix44.from_x_rotation(-np.pi / 6),
+                        color=leg_color)
 
         # wyświetlenie lewej nogi (po prawej od patrzącego)
-        translation = Matrix44.from_translation([0.0, -2.0, -1.5])
-        scaling = Matrix44.from_scale([0.5, 0.5, 1.75])
-        rotation = Matrix44.from_x_rotation(np.pi / 6)
-        self.color.value = leg_color
-        self.transform_matrix.write((projection * lookat * translation * rotation * scaling).astype('f4'))
-        self.cube.render(moderngl.TRIANGLE_STRIP)
+        self.render_vbo(self.cube,
+                        projection=projection,
+                        lookat=lookat,
+                        translation=Matrix44.from_translation([0.0, -2.0, -1.5]),
+                        scale=Matrix44.from_scale([0.5, 0.5, 1.75]),
+                        rotation=Matrix44.from_x_rotation(np.pi / 6),
+                        color=leg_color)
