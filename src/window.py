@@ -1,6 +1,10 @@
+import os
+
 import moderngl
 import numpy as np
-from moderngl import Texture, VertexArray
+from PIL import Image
+from moderngl import Texture, VertexArray, TextureCube
+from pyglet.gl import glBindTexture, GL_TEXTURE_2D, glTexParameteri, GL_TEXTURE_WRAP_T, GL_REPEAT, GL_TEXTURE_WRAP_S
 from pyrr import Matrix44, Vector3, vector, matrix33
 
 from base_window import BaseWindowConfig
@@ -9,7 +13,7 @@ from base_window import BaseWindowConfig
 class SSAOWindow(BaseWindowConfig):
     def __init__(self, **kwargs):
         super(SSAOWindow, self).__init__(**kwargs)
-        self.camera_pos = Vector3([15.0, 0.0, 0.0])
+        self.camera_pos = Vector3([10.0, 0.0, 0.0])
         self.camera_target = Vector3([-1.0, 0, 0.0])
         self.camera_up = Vector3([0.0, 0, 1.0])
         self.camera_moving_speed = 0.1
@@ -51,15 +55,21 @@ class SSAOWindow(BaseWindowConfig):
         # wczytanie obiektów do późniejszego renderowania
         self.sphere = self.load_scene("sphere.obj").root_nodes[0].mesh.vao.instance(self.program)
         self.cube = self.load_scene("cube.obj").root_nodes[0].mesh.vao.instance(self.program)
-        self.plane = self.load_scene("plane.obj").root_nodes[0].mesh.vao.instance(self.program)
+        self.teapot = self.load_scene("teapot.obj").root_nodes[0].mesh.vao.instance(self.program)
 
         # tekstury
-        self.wood_texture = self.load_texture_2d("../textures/laminate_floor_02_diff_4k.jpg")
+        self.wood_texture = self.load_texture_2d("../textures/wood.jpg")
+        self.football_texture = self.load_texture_2d("../textures/football.jpg")
+        self.stone_texture = self.load_texture_2d("../textures/stone.jpg")
+        self.metal_texture = self.load_texture_2d("../textures/metal.jpg")
+        companion_cube_path = ["../textures/companion_cube.jpg"] * 6
+        self.companion_cube = self.load_texture_cube(*companion_cube_path)
 
     def init_shaders_variables(self):
         self.transform_matrix = self.program['transform_matrix']  # przekształcenie obiektu pierwotnego
         self.color = self.program['color']  # przekazywanie koloru do shadera
         self.use_texture = self.program['use_texture']
+        self.texture_size = self.program['texture_scale']
 
     def render_vbo(self,
                    vertex_object: VertexArray,
@@ -69,14 +79,24 @@ class SSAOWindow(BaseWindowConfig):
                    rotation=Matrix44.identity(),
                    scale=Matrix44.identity(),
                    color=(0., 0., 0.),
-                   texture: Texture = None):
+                   texture: Texture = None,
+                   texture_cube: TextureCube = None,
+                   texture_scale=1.):
         self.transform_matrix.write((projection * lookat * translation * rotation * scale).astype('f4'))
-        if texture is None:
-            self.use_texture.value = False
-            self.color.value = color
-        else:
-            self.use_texture.value = True
+        self.texture_size.write(np.array(texture_scale).astype("f4"))
+        self.color.value = color
+
+        if texture is not None and texture_cube is not None:
+            raise Exception("You cannot apply texture_2d and texture_cube at the same time.")
+
+        if texture_cube is not None:
+            self.use_texture.value = 2
+            texture_cube.use()
+        elif texture is not None:
+            self.use_texture.value = 1
             texture.use()
+        else:
+            self.use_texture.value = 0
         vertex_object.render()
 
     def render(self, time: float, frame_time: float):
@@ -90,10 +110,7 @@ class SSAOWindow(BaseWindowConfig):
             self.camera_up
         )
 
-        # ustawienie kolorów dla danych części ciała
-        arm_color = (0.0, 0x2d / 255, 0x6e / 255)
-        leg_color = (0.5, 0.0, 0.0)
-
+        # Tło
         self.render_vbo(self.cube,
                         projection=projection,
                         lookat=lookat,
@@ -101,53 +118,35 @@ class SSAOWindow(BaseWindowConfig):
                         scale=Matrix44.from_scale([10, 10, 0.1]),
                         texture=self.wood_texture)
 
-        # wyświetlenie głowy
+        self.render_vbo(self.cube,
+                        projection=projection,
+                        lookat=lookat,
+                        translation=Matrix44.from_translation([-10.0, 0.0, 5.0]),
+                        scale=Matrix44.from_scale([10, 10, 0.1]),
+                        rotation=Matrix44.from_y_rotation(-np.pi / 2),
+                        texture=self.stone_texture,
+                        texture_scale=0.1)
+
+        # Piłka
         self.render_vbo(self.sphere,
                         projection=projection,
                         lookat=lookat,
-                        translation=Matrix44.from_translation([0.0, 0.0, 5.0]),
-                        color=(1.0, 229 / 255, 180 / 225))
+                        translation=Matrix44.from_translation([-9.0, 0.0, -4.0]),
+                        texture=self.football_texture)
 
-        # wyświetlenie tułowia
+        # Dzban
+        self.render_vbo(self.teapot,
+                        projection=projection,
+                        lookat=lookat,
+                        translation=Matrix44.from_translation([-6.0, 3.0, -3.5]),
+                        rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
+                        scale=Matrix44.from_scale([0.2, 0.2, 0.2]),
+                        texture=self.metal_texture)
+
+        # Kostka
         self.render_vbo(self.cube,
                         projection=projection,
                         lookat=lookat,
-                        translation=Matrix44.from_translation([0.0, 0.0, 2.0]),
-                        scale=Matrix44.from_scale([1.0, 1.0, 2.0]),
-                        color=(1.0, 215 / 255, 0.0))
-
-        # wyświetlenie prawej ręki (po lewej od patrzącego)
-        self.render_vbo(self.cube,
-                        projection=projection,
-                        lookat=lookat,
-                        translation=Matrix44.from_translation([0.0, 3.0, 3.0]),
-                        scale=Matrix44.from_scale([0.5, 0.5, 1.25]),
-                        rotation=Matrix44.from_x_rotation(-np.pi / 4),
-                        color=arm_color)
-
-        # wyświetlenie lewej ręki (po lewej od patrzącego)
-        self.render_vbo(self.cube,
-                        projection=projection,
-                        lookat=lookat,
-                        translation=Matrix44.from_translation([0.0, -3.0, 3.0]),
-                        scale=Matrix44.from_scale([0.5, 0.5, 1.25]),
-                        rotation=Matrix44.from_x_rotation(np.pi / 4),
-                        color=arm_color)
-
-        # wyświetlenie prawej nogi (po lewej od patrzącego)
-        self.render_vbo(self.cube,
-                        projection=projection,
-                        lookat=lookat,
-                        translation=Matrix44.from_translation([0.0, 2.0, -1.5]),
-                        scale=Matrix44.from_scale([0.5, 0.5, 1.75]),
-                        rotation=Matrix44.from_x_rotation(-np.pi / 6),
-                        color=leg_color)
-
-        # wyświetlenie lewej nogi (po prawej od patrzącego)
-        self.render_vbo(self.cube,
-                        projection=projection,
-                        lookat=lookat,
-                        translation=Matrix44.from_translation([0.0, -2.0, -1.5]),
-                        scale=Matrix44.from_scale([0.5, 0.5, 1.75]),
-                        rotation=Matrix44.from_x_rotation(np.pi / 6),
-                        color=leg_color)
+                        translation=Matrix44.from_translation([-6.0, -3.0, -3.5]),
+                        rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
+                        texture_cube=self.companion_cube)
