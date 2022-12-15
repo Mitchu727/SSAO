@@ -17,34 +17,44 @@ class SSAOWindow(BaseWindowConfig):
     def unicode_char_entered(self, char: str):
         forward = self.camera_target
         side = vector.normalize(np.cross(forward, self.camera_up))
-        up = vector.normalize(np.cross(side, forward))
+        up = self.camera_up
 
         if char.lower() == "w":
-            self.camera_pos += forward * self.camera_moving_speed
+            self.move_camera(forward * self.camera_moving_speed)
         if char.lower() == "s":
-            self.camera_pos -= forward * self.camera_moving_speed
+            self.move_camera(-forward * self.camera_moving_speed)
         if char.lower() == "d":
-            self.camera_pos += side * self.camera_moving_speed
+            self.move_camera(side * self.camera_moving_speed)
         if char.lower() == "a":
-            self.camera_pos -= side * self.camera_moving_speed
+            self.move_camera(-side * self.camera_moving_speed)
+        if char.lower() == " ":
+            self.move_camera(up * self.camera_moving_speed)
+        if char.lower() == "c":
+            self.move_camera(-up * self.camera_moving_speed)
         if char.lower() == "q":
-            self.camera_pos += up * self.camera_moving_speed
-        if char.lower() == "z":
-            self.camera_pos -= up * self.camera_moving_speed
+            forward_rotation = matrix33.create_from_axis_rotation(forward, -np.pi / 45 * self.camera_rotation_speed)
+            self.rotate_camera(forward_rotation)
+        if char.lower() == "e":
+            forward_rotation = matrix33.create_from_axis_rotation(forward, np.pi / 45 * self.camera_rotation_speed)
+            self.rotate_camera(forward_rotation)
+
+    def move_camera(self, moving_vector):
+        self.camera_pos += moving_vector
         print(f"New camera position: {self.camera_pos}")
 
-    def mouse_position_event(self, x, y, dx, dy):
-        z_rotation_matrix = matrix33.create_from_z_rotation(np.pi / 180 * self.camera_moving_speed * dx)
-
-        self.camera_target = vector.normalize(matrix33.apply_to_vector(z_rotation_matrix, self.camera_target))
-        self.camera_up = vector.normalize(matrix33.apply_to_vector(z_rotation_matrix, self.camera_up))
-
-        side = vector.normalize(np.cross(self.camera_target, self.camera_up))
-        side_rotation = matrix33.create_from_axis_rotation(side, -np.pi / 180 * self.camera_moving_speed * dy)
-
-        self.camera_target = vector.normalize(matrix33.apply_to_vector(side_rotation, self.camera_target))
-        self.camera_up = vector.normalize(matrix33.apply_to_vector(side_rotation, self.camera_up))
+    def rotate_camera(self, rotation_matrix):
+        self.camera_target = vector.normalize(matrix33.apply_to_vector(rotation_matrix, self.camera_target))
+        self.camera_up = vector.normalize(matrix33.apply_to_vector(rotation_matrix, self.camera_up))
         print(f"New camera vector: {self.camera_target}")
+
+    def mouse_position_event(self, x, y, dx, dy):
+        side = vector.normalize(np.cross(self.camera_target, self.camera_up))
+
+        z_rotation_matrix = matrix33.create_from_z_rotation(np.pi / 180 * self.camera_rotation_speed * dx)
+        self.rotate_camera(z_rotation_matrix)
+
+        side_rotation = matrix33.create_from_axis_rotation(side, -np.pi / 180 * self.camera_rotation_speed * dy)
+        self.rotate_camera(side_rotation)
 
     def model_load(self):
         # wczytanie obiektów do późniejszego renderowania
