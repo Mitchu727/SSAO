@@ -1,10 +1,6 @@
-import os
-
 import moderngl
 import numpy as np
-from PIL import Image
 from moderngl import Texture, VertexArray, TextureCube
-from pyglet.gl import glBindTexture, GL_TEXTURE_2D, glTexParameteri, GL_TEXTURE_WRAP_T, GL_REPEAT, GL_TEXTURE_WRAP_S
 from pyrr import Matrix44, Vector3, vector, matrix33
 
 from base_window import BaseWindowConfig
@@ -62,8 +58,7 @@ class SSAOWindow(BaseWindowConfig):
         self.football_texture = self.load_texture_2d("../textures/football.jpg")
         self.stone_texture = self.load_texture_2d("../textures/stone.jpg")
         self.metal_texture = self.load_texture_2d("../textures/metal.jpg")
-        companion_cube_path = ["../textures/companion_cube.jpg"] * 6
-        self.companion_cube = self.load_texture_cube(*companion_cube_path)
+        self.companion_cube = self.load_texture_cube(*["../textures/companion_cube.jpg"] * 6)
 
     def init_shaders_variables(self):
         self.transform_matrix = self.program['transform_matrix']  # przekształcenie obiektu pierwotnego
@@ -147,6 +142,6 @@ class SSAOWindow(BaseWindowConfig):
         self.render_vbo(self.cube,
                         projection=projection,
                         lookat=lookat,
-                        translation=Matrix44.from_translation([-6.0, -3.0, -3.5]),
+                        translation=Matrix44.from_translation([-6.0, -3.0, -4]),
                         rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
                         texture_cube=self.companion_cube)
