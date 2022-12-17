@@ -3,6 +3,7 @@ import numpy as np
 from pyrr import Matrix44, Vector3, vector, matrix33
 
 from base_window import BaseWindowConfig
+from point_light import lights_from_open_gl
 
 
 class SSAOWindow(BaseWindowConfig):
@@ -55,16 +56,22 @@ class SSAOWindow(BaseWindowConfig):
     def init_shaders_variables(self):
         self.transform_matrix = self.program['transform_matrix']  # przekształcenie obiektu pierwotnego
         self.object_color = self.program['object_color']  # przekazywanie koloru do shadera
-        self.light_color = self.program['light_color']  # przekazywanie koloru do shadera
         self.object_shininess = self.program['object_shininess']  # przekazywanie koloru do shadera
-        self.light_strength = self.program['light_strength']  # przekazywanie koloru do shadera
-        self.light_position = self.program['light_position']
+        self.point_lights = lights_from_open_gl(self.program, 2) # przekazywanie świateł do shadera4
         self.view_position = self.program['view_position']
+
+    def setup_lights(self):
+        self.point_lights[0].position.value = (0., 10.0, 10.0)
+        self.point_lights[0].color.value = (0.5, 0.5, 0.5)
+        self.point_lights[0].strength.value = 0.1
+        self.point_lights[1].position.value = (0., -10.0, 0.0)
+        self.point_lights[1].color.value = (0.5, 0.5, 0.5)
+        self.point_lights[1].strength.value = 0.4
 
     def render(self, time: float, frame_time: float):
         self.ctx.clear(0.8, 0.8, 0.8, 0.0)
         self.ctx.enable(moderngl.DEPTH_TEST)
-
+        self.setup_lights()
         projection = Matrix44.perspective_projection(45.0, self.aspect_ratio, 0.1, 1000.0)
 
         lookat = Matrix44.look_at(
@@ -73,10 +80,6 @@ class SSAOWindow(BaseWindowConfig):
             self.camera_up
         )
 
-
-        self.light_color.value = (0.5, 0.5, 0.5)
-        self.light_position.value = (0.0, 10.0, 0.0)
-        self.light_strength.value = 0.1
         self.object_shininess.value = 1.0
         self.view_position.value = self.camera_pos
 
