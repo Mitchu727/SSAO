@@ -75,19 +75,19 @@ class SSAOWindow(BaseWindowConfig):
         self.transform_matrix = self.program['transform_matrix']  # przekształcenie obiektu pierwotnego
         self.object_color = self.program['object_color']  # przekazywanie koloru do shadera
         self.object_shininess = self.program['object_shininess']  # przekazywanie koloru do shadera
-        self.point_lights = lights_from_open_gl(self.program, 2) # przekazywanie świateł do shadera4
+        self.point_lights = lights_from_open_gl(self.program, 1) # przekazywanie świateł do shadera4
         self.view_position = self.program['view_position']
-        self.color = self.program['color']  # przekazywanie koloru do shadera
+        self.color = self.program['object_color']  # przekazywanie koloru do shadera
         self.use_texture = self.program['use_texture']
         self.texture_size = self.program['texture_scale']
 
     def setup_lights(self):
-        self.point_lights[0].position.value = (0., 10.0, 10.0)
-        self.point_lights[0].color.value = (0.5, 0.5, 0.5)
-        self.point_lights[0].strength.value = 0.1
-        self.point_lights[1].position.value = (0., -10.0, 0.0)
-        self.point_lights[1].color.value = (0.5, 0.5, 0.5)
-        self.point_lights[1].strength.value = 0.4
+        self.point_lights[0].position.value = (5., 0., 0.)
+        self.point_lights[0].color.value = (1.0, 1.0, 1.0)
+        self.point_lights[0].strength.value = 2.
+        # self.point_lights[1].position.value = (0., -10.0, 0.0)
+        # self.point_lights[1].color.value = (0.5, 0.5, 0.5)
+        # self.point_lights[1].strength.value = 0.4
 
     def render_vbo(self,
                    vertex_object: VertexArray,
@@ -159,7 +159,7 @@ class SSAOWindow(BaseWindowConfig):
                         projection=projection,
                         lookat=lookat,
                         translation=Matrix44.from_translation([-6.0, 3.0, -3.5]),
-                        rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
+                        # rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
                         scale=Matrix44.from_scale([0.2, 0.2, 0.2]),
                         texture=self.metal_texture)
 
@@ -168,5 +168,11 @@ class SSAOWindow(BaseWindowConfig):
                         projection=projection,
                         lookat=lookat,
                         translation=Matrix44.from_translation([-6.0, -3.0, -4]),
-                        rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
+                        # rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
                         texture_cube=self.companion_cube)
+        # # Źródło światła
+        self.render_vbo(self.sphere,
+                        projection=projection,
+                        lookat=lookat,
+                        translation=Matrix44.from_translation(self.point_lights[0].position.value),
+                        color=self.point_lights[0].color.value)
