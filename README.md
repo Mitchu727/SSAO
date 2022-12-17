@@ -1,8 +1,6 @@
 ## Screen Space Ambient Occlusion
 
-W ramach projektu należy stworzyć program, który będzie renderował zło-
-żoną geometrycznie scenę z kilkoma źródłami światła i implementował technikę
-okluzji otoczenia.
+W ramach projektu należy stworzyć program, który będzie renderował złożoną geometrycznie scenę z kilkoma źródłami światła i implementował technikę okluzji otoczenia.
 
 W tym celu należy zaimplementować:
 
@@ -13,5 +11,3 @@ W tym celu należy zaimplementować:
    2. Scena 3d powinna być przygotowana w taki sposób, aby możliwe było efektywne zaprezentowanie algorytmu
 4. Przełączanie ilości sampli w hemisferze
 5. Kamerę perspektywiczną — możliwość poruszania się po scenie oraz obrotu
-
-
