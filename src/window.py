@@ -73,6 +73,8 @@ class SSAOWindow(BaseWindowConfig):
 
     def init_shaders_variables(self):
         self.transform_matrix = self.program['transform_matrix']  # przekształcenie obiektu pierwotnego
+        self.lookat = self.program['lookat']
+        self.projection = self.program['projection']
         self.object_color = self.program['object_color']  # przekazywanie koloru do shadera
         self.object_shininess = self.program['object_shininess']  # przekazywanie koloru do shadera
         self.point_lights = lights_from_open_gl(self.program, 1) # przekazywanie świateł do shadera4
@@ -83,7 +85,7 @@ class SSAOWindow(BaseWindowConfig):
 
     def setup_lights(self):
         self.point_lights[0].position.value = (5., 0., 0.)
-        self.point_lights[0].color.value = (1.0, 1.0, 1.0)
+        self.point_lights[0].color.value = (0.25, 0.25, 0.25)
         self.point_lights[0].strength.value = 2.
         # self.point_lights[1].position.value = (0., -10.0, 0.0)
         # self.point_lights[1].color.value = (0.5, 0.5, 0.5)
@@ -100,7 +102,9 @@ class SSAOWindow(BaseWindowConfig):
                    texture: Texture = None,
                    texture_cube: TextureCube = None,
                    texture_scale=1.):
-        self.transform_matrix.write((projection * lookat * translation * rotation * scale).astype('f4'))
+        self.projection.write(projection.astype('f4'))
+        self.lookat.write(lookat.astype('f4'))
+        self.transform_matrix.write((translation * rotation * scale).astype('f4'))
         self.texture_size.write(np.array(texture_scale).astype("f4"))
         self.color.value = color
 
@@ -116,7 +120,7 @@ class SSAOWindow(BaseWindowConfig):
         else:
             self.use_texture.value = 0
         vertex_object.render()
-        
+
     def render(self, time: float, frame_time: float):
         self.ctx.clear(1.0, 1.0, 1.0)
         self.ctx.enable(moderngl.DEPTH_TEST | moderngl.CULL_FACE)
@@ -151,7 +155,7 @@ class SSAOWindow(BaseWindowConfig):
         self.render_vbo(self.sphere,
                         projection=projection,
                         lookat=lookat,
-                        translation=Matrix44.from_translation([-9.0, 0.0, -4.0]),
+                        translation=Matrix44.from_translation([-5.0, 0.0, -4.0]),
                         texture=self.football_texture)
 
         # Dzban
@@ -168,9 +172,10 @@ class SSAOWindow(BaseWindowConfig):
                         projection=projection,
                         lookat=lookat,
                         translation=Matrix44.from_translation([-6.0, -3.0, -4]),
-                        # rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
+                        rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
                         texture_cube=self.companion_cube)
-        # # Źródło światła
+
+        # Źródło światła
         self.render_vbo(self.sphere,
                         projection=projection,
                         lookat=lookat,

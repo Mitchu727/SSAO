@@ -20,50 +20,55 @@ uniform int use_texture;
 uniform sampler2D tex;
 uniform samplerCube texCube;
 uniform float texture_scale;
+
 // do świateł
 uniform PointLight point_lights[NR_POINT_LIGHTS];
 uniform vec3 view_position;
 uniform vec3 object_color;
 uniform float object_shininess;
 
-vec3 CalculateLight(PointLight light, vec3 normal, vec3 view);
+vec3 calculateLight(PointLight light);
+vec3 getColor();
 
 void main()
 {
+    vec3 color = getColor();
+    vec3 light = vec3(0);
+    for(int i = 0; i < NR_POINT_LIGHTS; i++)
+        light += calculateLight(point_lights[i]);
+    vec3 result = color*light;
+    f_color = vec4(result, 1.0);
+}
+
+vec3 GetColor() {
     vec3 color;
     switch (use_texture) {
         case 0:
             color = vec3(object_color);
             break;
         case 1:
-            vec2 tex_coord = vec2(v_text[0]/texture_scale, v_text[1]/texture_scale);
+            vec2 tex_coord = vec2(v_text/texture_scale);
             color = vec3(texture(tex, tex_coord).rgb);
             break;
         case 2:
             color = vec3(texture(texCube, v_text3).rgb);
             break;
     }
-
-    vec3 light = vec3(0);
-    for(int i = 0; i < NR_POINT_LIGHTS; i++)
-        light += CalculateLight(point_lights[i], v_norm, view_position);
-    vec3 result = color*light;
-    f_color = vec4(result, 1.0);
+    return color;
 }
 
-vec3 CalculateLight(PointLight light, vec3 normal, vec3 view) {
-    //ambient
-    vec3 ambient = light.color * light.strength;
-    //diff
-    vec3 light_directory = normalize(light.position - v_vert);
-    vec3 normal_vector = normalize(normal);
-    float diff = max(dot(normal_vector, light_directory), 0.0);
-    vec3 diffuse = diff * light.color;
-    //specular
-    vec3 view_directory = normalize(v_vert-view_position);
-    vec3 reflect_directory = reflect(light_directory, normal_vector);
-    float spec = pow(max(dot(view_directory, reflect_directory), 0.0), 32);
-    vec3 specular = object_shininess * spec * light.color;
-    return (diffuse);
+vec3 CalculateLight(PointLight light) {
+    vec3 light_direction = normalize(light.position - v_vert);
+    vec3 reflect_direction = reflect(-light_direction, v_norm);
+    vec3 view_direction = normalize(view_position - v_vert);
+
+    float diff = max(dot(v_norm, light_direction), 0.0);
+    float spec = max(dot(view_direction, reflect_direction), 0.0);
+
+    vec3 ambient_color = light.color * light.strength;
+    vec3 diffuse_color = diff * light.color;
+    vec3 specular_color = pow(spec, 32.) * object_shininess * light.color;
+
+    return ambient_color + diffuse_color;
 }
 
