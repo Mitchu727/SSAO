@@ -40,7 +40,7 @@ void main()
     f_color = vec4(result, 1.0);
 }
 
-vec3 GetColor() {
+vec3 getColor() {
     vec3 color;
     switch (use_texture) {
         case 0:
@@ -57,7 +57,7 @@ vec3 GetColor() {
     return color;
 }
 
-vec3 CalculateLight(PointLight light) {
+vec3 calculateLight(PointLight light) {
     vec3 light_direction = normalize(light.position - v_vert);
     vec3 reflect_direction = reflect(-light_direction, v_norm);
     vec3 view_direction = normalize(view_position - v_vert);
