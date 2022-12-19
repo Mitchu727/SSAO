@@ -1,6 +1,6 @@
 #version 330
 
-#define NR_POINT_LIGHTS 2
+#define NR_POINT_LIGHTS 1
 
 struct PointLight {
     vec3 color;

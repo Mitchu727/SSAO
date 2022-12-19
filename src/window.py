@@ -55,24 +55,27 @@ class SSAOWindow(BaseWindowConfig):
 
     def init_shaders_variables(self):
         self.transform_matrix = self.program['transform_matrix']  # przekształcenie obiektu pierwotnego
+        # self.model = self.program['model']  # przekształcenie obiektu pierwotnego
+        self.projection = self.program['projection']
+        self.view = self.program['view']
         self.object_color = self.program['object_color']  # przekazywanie koloru do shadera
         self.object_shininess = self.program['object_shininess']  # przekazywanie koloru do shadera
-        self.point_lights = lights_from_open_gl(self.program, 2) # przekazywanie świateł do shadera4
+        self.point_lights = lights_from_open_gl(self.program, 1) # przekazywanie świateł do shadera4
         self.view_position = self.program['view_position']
 
     def setup_lights(self):
-        self.point_lights[0].position.value = (0., 10.0, 10.0)
+        self.point_lights[0].position.value = (10., 10.0, 0.0)
         self.point_lights[0].color.value = (0.5, 0.5, 0.5)
         self.point_lights[0].strength.value = 0.1
-        self.point_lights[1].position.value = (0., -10.0, 0.0)
-        self.point_lights[1].color.value = (0.5, 0.5, 0.5)
-        self.point_lights[1].strength.value = 0.4
+        # self.point_lights[1].position.value = (0., -10.0, 0.0)
+        # self.point_lights[1].color.value = (0.5, 0.5, 0.5)
+        # self.point_lights[1].strength.value = 0.4
 
     def render(self, time: float, frame_time: float):
         self.ctx.clear(0.8, 0.8, 0.8, 0.0)
         self.ctx.enable(moderngl.DEPTH_TEST)
         self.setup_lights()
-        projection = Matrix44.perspective_projection(45.0, self.aspect_ratio, 0.1, 1000.0)
+        projection = Matrix44.perspective_projection(45.0, self.aspect_ratio, 0.1, 100.0)
 
         lookat = Matrix44.look_at(
             self.camera_pos,
@@ -89,17 +92,20 @@ class SSAOWindow(BaseWindowConfig):
         arm_color = (0.0, 0x2d / 255, 0x6e / 255)
         leg_color = (0.5, 0.0, 0.0)
 
+        self.view.write(lookat.astype('f4'))
+        self.projection.write(projection.astype('f4'))
+
         # wyświetlenie głowy
         translation = Matrix44.from_translation([0.0, 0.0, 5.0])
         self.object_color.value = head_color
-        self.transform_matrix.write((projection * lookat * translation).astype('f4'))
+        self.transform_matrix.write((translation).astype('f4'))
         self.sphere.render(moderngl.TRIANGLE_STRIP)
 
         # wyświetlenie tułowia
-        translation = Matrix44.from_translation([0.0, 0.0, 2.0])
+        translation = Matrix44.from_translation([20, 0.0, 2.0])
         scaling = Matrix44.from_scale([1.0, 1.0, 2.0])
         self.object_color.value = body_color
-        self.transform_matrix.write((projection * lookat * translation * scaling).astype('f4'))
+        self.transform_matrix.write((translation * scaling).astype('f4'))
         self.cube.render(moderngl.TRIANGLE_STRIP)
 
         # wyświetlenie prawej ręki (po lewej od patrzącego)
@@ -107,7 +113,7 @@ class SSAOWindow(BaseWindowConfig):
         scaling = Matrix44.from_scale([0.5, 0.5, 1.25])
         rotation = Matrix44.from_x_rotation(-np.pi / 4)
         self.object_color.value = arm_color
-        self.transform_matrix.write((projection * lookat * translation * rotation * scaling).astype('f4'))
+        self.transform_matrix.write((translation * rotation * scaling).astype('f4'))
         self.cube.render(moderngl.TRIANGLE_STRIP)
 
         # wyświetlenie lewej ręki (po lewej od patrzącego)
@@ -115,7 +121,7 @@ class SSAOWindow(BaseWindowConfig):
         scaling = Matrix44.from_scale([0.5, 0.5, 1.25])
         rotation = Matrix44.from_x_rotation(np.pi / 4)
         self.object_color.value = arm_color
-        self.transform_matrix.write((projection * lookat * translation * rotation * scaling).astype('f4'))
+        self.transform_matrix.write((translation * rotation * scaling).astype('f4'))
         self.cube.render(moderngl.TRIANGLE_STRIP)
 
         # wyświetlenie prawej nogi (po lewej od patrzącego)
@@ -123,7 +129,7 @@ class SSAOWindow(BaseWindowConfig):
         scaling = Matrix44.from_scale([0.5, 0.5, 1.75])
         rotation = Matrix44.from_x_rotation(-np.pi / 6)
         self.object_color.value = leg_color
-        self.transform_matrix.write((projection * lookat * translation * rotation * scaling).astype('f4'))
+        self.transform_matrix.write((translation * rotation * scaling).astype('f4'))
         self.cube.render(moderngl.TRIANGLE_STRIP)
 
         # wyświetlenie lewej nogi (po prawej od patrzącego)
@@ -131,5 +137,5 @@ class SSAOWindow(BaseWindowConfig):
         scaling = Matrix44.from_scale([0.5, 0.5, 1.75])
         rotation = Matrix44.from_x_rotation(np.pi / 6)
         self.object_color.value = leg_color
-        self.transform_matrix.write((projection * lookat * translation * rotation * scaling).astype('f4'))
+        self.transform_matrix.write((translation * rotation * scaling).astype('f4'))
         self.cube.render(moderngl.TRIANGLE_STRIP)
