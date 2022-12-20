@@ -48,8 +48,7 @@ vec4 getColor() {
             color = vec4(object_color, 1.0);
             break;
         case 1:
-            vec2 tex_coord = vec2(v_text/texture_scale);
-            color = texture(tex, tex_coord).rgba;
+            color = texture(tex, v_text/texture_scale).rgba;
             break;
         case 2:
             color = texture(texCube, v_text3).rgba;
