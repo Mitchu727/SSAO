@@ -10,7 +10,7 @@ struct PointLight {
 
 out vec4 f_color;
 
-in vec3 v_vert;
+in vec3 v_position;
 in vec3 v_norm;
 in vec2 v_text;
 in vec3 v_text3;
@@ -32,7 +32,9 @@ vec3 getColor();
 
 void main()
 {
-    vec3 color = getColor();
+    vec3 color = object_color;
+//    vec3 color = getColor();
+    vec3 some_color = getColor();
     vec3 light = vec3(0);
     for(int i = 0; i < NR_POINT_LIGHTS; i++)
         light += calculateLight(point_lights[i]);
@@ -58,16 +60,19 @@ vec3 getColor() {
 }
 
 vec3 calculateLight(PointLight light) {
-    vec3 light_direction = normalize(light.position - v_vert);
-    vec3 reflect_direction = reflect(-light_direction, v_norm);
-    vec3 view_direction = normalize(view_position - v_vert);
-
-    float diff = max(dot(v_norm, light_direction), 0.0);
-    float spec = max(dot(view_direction, reflect_direction), 0.0);
-
     vec3 ambient_color = light.color * light.strength;
+
+    vec3 light_direction = normalize(light.position - v_position);
+    vec3 normal_vector = normalize(v_norm);
+    float diff = max(dot(normal_vector, light_direction), 0.0);
     vec3 diffuse_color = diff * light.color;
-    vec3 specular_color = pow(spec, 32.) * object_shininess * light.color;
+
+
+    vec3 view_direction = normalize(view_position - v_position);
+    vec3 reflect_direction = reflect(-light_direction, v_norm);
+
+    float spec = pow(max(dot(view_direction, reflect_direction), 0.0), 32.);
+    vec3 specular_color = spec * object_shininess * light.color;
 
     return ambient_color + diffuse_color;
 }

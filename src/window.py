@@ -73,7 +73,7 @@ class SSAOWindow(BaseWindowConfig):
 
     def init_shaders_variables(self):
         self.transform_matrix = self.program['transform_matrix']  # przekształcenie obiektu pierwotnego
-        self.lookat = self.program['lookat']
+        self.view = self.program['view']
         self.projection = self.program['projection']
         self.object_color = self.program['object_color']  # przekazywanie koloru do shadera
         self.object_shininess = self.program['object_shininess']  # przekazywanie koloru do shadera
@@ -98,12 +98,10 @@ class SSAOWindow(BaseWindowConfig):
                    translation=Matrix44.identity(),
                    rotation=Matrix44.identity(),
                    scale=Matrix44.identity(),
-                   color=(0., 0., 0.),
+                   color=(0.5, 0.5, 0.5),
                    texture: Texture = None,
                    texture_cube: TextureCube = None,
                    texture_scale=1.):
-        self.projection.write(projection.astype('f4'))
-        self.lookat.write(lookat.astype('f4'))
         self.transform_matrix.write((translation * rotation * scale).astype('f4'))
         self.texture_size.write(np.array(texture_scale).astype("f4"))
         self.color.value = color
@@ -125,7 +123,7 @@ class SSAOWindow(BaseWindowConfig):
         self.ctx.clear(1.0, 1.0, 1.0)
         self.ctx.enable(moderngl.DEPTH_TEST | moderngl.CULL_FACE)
         self.setup_lights()
-        projection = Matrix44.perspective_projection(45.0, self.aspect_ratio, 0.1, 1000.0)
+        projection = Matrix44.perspective_projection(45.0, self.aspect_ratio, 0.1, 100.0)
         lookat = Matrix44.look_at(
             self.camera_pos,
             self.camera_pos + self.camera_target,
@@ -133,14 +131,9 @@ class SSAOWindow(BaseWindowConfig):
         )
         self.object_shininess.value = 1.0
         self.view_position.value = self.camera_pos
-
+        self.projection.write(projection.astype('f4'))
+        self.view.write(lookat.astype('f4'))
         # Tło
-        self.render_vbo(self.cube,
-                        projection=projection,
-                        lookat=lookat,
-                        translation=Matrix44.from_translation([0.0, 0.0, -5.0]),
-                        scale=Matrix44.from_scale([10, 10, 0.1]),
-                        texture=self.wood_texture)
 
         self.render_vbo(self.cube,
                         projection=projection,
@@ -163,7 +156,7 @@ class SSAOWindow(BaseWindowConfig):
                         projection=projection,
                         lookat=lookat,
                         translation=Matrix44.from_translation([-6.0, 3.0, -3.5]),
-                        # rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
+                        rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
                         scale=Matrix44.from_scale([0.2, 0.2, 0.2]),
                         texture=self.metal_texture)
 
