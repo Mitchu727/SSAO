@@ -77,7 +77,7 @@ class SSAOWindow(BaseWindowConfig):
         self.projection = self.program['projection']
         self.object_color = self.program['object_color']  # przekazywanie koloru do shadera
         self.object_shininess = self.program['object_shininess']  # przekazywanie koloru do shadera
-        self.point_lights = lights_from_open_gl(self.program, 1) # przekazywanie świateł do shadera4
+        self.point_lights = lights_from_open_gl(self.program, 1)  # przekazywanie świateł do shadera4
         self.view_position = self.program['view_position']
         self.color = self.program['object_color']  # przekazywanie koloru do shadera
         self.use_texture = self.program['use_texture']
@@ -85,11 +85,10 @@ class SSAOWindow(BaseWindowConfig):
 
     def setup_lights(self):
         self.point_lights[0].position.value = (5., 0., 0.)
-        self.point_lights[0].color.value = (0.25, 0.25, 0.25)
-        self.point_lights[0].strength.value = 2.
-        # self.point_lights[1].position.value = (0., -10.0, 0.0)
-        # self.point_lights[1].color.value = (0.5, 0.5, 0.5)
-        # self.point_lights[1].strength.value = 0.4
+        self.point_lights[0].color.value = (1., 1., 1.)
+        self.point_lights[0].ambient_strength.value = 0.25
+        self.point_lights[0].diffuse_strength.value = 0.5
+        self.point_lights[0].specular_strength.value = 1
 
     def render_vbo(self,
                    vertex_object: VertexArray,
@@ -174,10 +173,3 @@ class SSAOWindow(BaseWindowConfig):
                         translation=Matrix44.from_translation([-6.0, -3.0, -4]),
                         rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
                         texture_cube=self.companion_cube)
-
-        # Źródło światła
-        self.render_vbo(self.sphere,
-                        projection=projection,
-                        lookat=lookat,
-                        translation=Matrix44.from_translation(self.point_lights[0].position.value),
-                        color=self.point_lights[0].color.value)

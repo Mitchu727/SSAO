@@ -5,7 +5,9 @@
 struct PointLight {
     vec3 color;
     vec3 position;
-    float strength;
+    float ambient_strength;
+    float diffuse_strength;
+    float specular_strength;
 };
 
 out vec4 f_color;
@@ -28,30 +30,29 @@ uniform vec3 object_color;
 uniform float object_shininess;
 
 vec3 calculateLight(PointLight light);
-vec3 getColor();
+vec4 getColor();
 
 void main()
 {
-    vec3 color = getColor();
+    vec4 object_color = getColor();
     vec3 light = vec3(0);
     for(int i = 0; i < NR_POINT_LIGHTS; i++)
         light += calculateLight(point_lights[i]);
-    vec3 result = color*light;
-    f_color = vec4(result, 1.0);
+    f_color = vec4(object_color.xyz * light, object_color.a);
 }
 
-vec3 getColor() {
-    vec3 color;
+vec4 getColor() {
+    vec4 color;
     switch (use_texture) {
         case 0:
-            color = vec3(object_color);
+            color = vec4(object_color, 1.0);
             break;
         case 1:
             vec2 tex_coord = vec2(v_text/texture_scale);
-            color = vec3(texture(tex, tex_coord).rgb);
+            color = texture(tex, tex_coord).rgba;
             break;
         case 2:
-            color = vec3(texture(texCube, v_text3).rgb);
+            color = texture(texCube, v_text3).rgba;
             break;
     }
     return color;
@@ -65,10 +66,10 @@ vec3 calculateLight(PointLight light) {
     float diff = max(dot(v_norm, light_direction), 0.0);
     float spec = max(dot(view_direction, reflect_direction), 0.0);
 
-    vec3 ambient_color = light.color * light.strength;
-    vec3 diffuse_color = diff * light.color;
-    vec3 specular_color = pow(spec, 32.) * object_shininess * light.color;
+    vec3 ambient_color = light.color * light.ambient_strength;
+    vec3 diffuse_color = diff * light.color * light.diffuse_strength;
+    vec3 specular_color = diff <= 0 ? vec3(0) : pow(spec, 64.) * object_shininess * light.color * light.specular_strength;
 
-    return ambient_color + diffuse_color;
+    return clamp(ambient_color + diffuse_color + specular_color, 0.0, 1.0);
 }
 
