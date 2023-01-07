@@ -3,6 +3,7 @@ import numpy as np
 from moderngl import Texture, VertexArray, TextureCube
 from moderngl_window.context.base import WindowConfig
 from pyrr import Matrix44, Vector3, vector, matrix33
+from pyrr.vector import interpolate
 
 import config
 import random
@@ -104,17 +105,20 @@ class SSAOWindow(WindowConfig):
     def hemisphere(self, kernel_size=64):
         samples = []
         for i in range(kernel_size):
-            samples.append(
-                vector.normalize(
-                    Vector3(
-                        [
-                            random.uniform(-1., 1.),
-                            random.uniform(-1., 1.),
-                            random.uniform(0., 1.),
-                        ]
-                    )
+            sample = vector.normalize(
+                Vector3(
+                    [
+                        random.uniform(-1., 1.),
+                        random.uniform(-1., 1.),
+                        random.uniform(0., 1.),
+                    ]
                 )
             )
+
+            scale = float(i) / 64.
+            sample *= interpolate(0.1, 1., scale * scale)
+
+            samples.append(sample)
         return samples
 
     def setup_lights(self):

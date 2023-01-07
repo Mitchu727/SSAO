@@ -1,6 +1,10 @@
 #version 330
 
 #define NR_POINT_LIGHTS 1
+#define KERNEL_SIZE 64
+
+float radius = 0.5;
+float bias = 0.025;
 
 struct PointLight {
     vec3 color;
@@ -29,7 +33,8 @@ uniform vec3 view_position;
 uniform vec3 object_color;
 uniform float object_shininess;
 
-uniform vec3 samples[64];
+uniform mat4 projection;
+uniform vec3 samples[KERNEL_SIZE];
 
 vec3 calculateLight(PointLight light);
 vec4 getColor();
@@ -38,7 +43,42 @@ void main()
 {
     vec4 object_color = getColor();
     vec3 light = vec3(0);
-    vec3 sth = samples[0] + samples[1];
+
+    // get input for SSAO algorithm
+//    vec3 fragPos = texture(gPosition, TexCoords).xyz;
+//    vec3 normal = normalize(texture(gNormal, TexCoords).rgb);
+//    vec3 randomVec = normalize(texture(texNoise, TexCoords * noiseScale).xyz);
+
+    vec3 fragPos = v_vert.xyz;
+    vec3 normal = normalize(v_norm.rgb);
+    vec3 randomVec = vec3(0);
+    // create TBN change-of-basis matrix: from tangent-space to view-space
+    vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));
+    vec3 bitangent = cross(normal, tangent);
+    mat3 TBN = mat3(tangent, bitangent, normal);
+
+    float occlusion = 0.0;
+    for(int i = 0; i < KERNEL_SIZE; ++i)
+    {
+        // get sample position
+        vec3 samplePos = TBN * samples[i]; // from tangent to view-space
+        samplePos = fragPos + samplePos * radius;
+
+        // project sample position (to sample texture) (to get position on screen/texture)
+        vec4 offset = vec4(samplePos, 1.0);
+        offset = projection * offset; // from view to clip-space
+        offset.xyz /= offset.w; // perspective divide
+        offset.xyz = offset.xyz * 0.5 + 0.5; // transform to range 0.0 - 1.0
+
+        // get sample depth
+//        float sampleDepth = texture(v_vert.xyz, offset.xy).z; // get depth value of kernel sample
+
+        vec4 offsetPosition = texture(v_vert, offsetUV.xy);
+
+        // range check & accumulate
+        float rangeCheck = smoothstep(0.0, 1.0, radius / abs(fragPos.z - sampleDepth));
+        occlusion += (sampleDepth >= samplePos.z + bias ? 1.0 : 0.0) * rangeCheck;
+    }
     for(int i = 0; i < NR_POINT_LIGHTS; i++)
         light += calculateLight(point_lights[i]);
     f_color = vec4(vec3(0.55) * light, 1.0);
