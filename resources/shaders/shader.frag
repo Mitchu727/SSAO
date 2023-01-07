@@ -29,6 +29,8 @@ uniform vec3 view_position;
 uniform vec3 object_color;
 uniform float object_shininess;
 
+uniform vec3 samples[64];
+
 vec3 calculateLight(PointLight light);
 vec4 getColor();
 
@@ -36,9 +38,10 @@ void main()
 {
     vec4 object_color = getColor();
     vec3 light = vec3(0);
+    vec3 sth = samples[0] + samples[1];
     for(int i = 0; i < NR_POINT_LIGHTS; i++)
         light += calculateLight(point_lights[i]);
-    f_color = vec4(object_color.xyz * light, object_color.a);
+    f_color = vec4(vec3(0.55) * light, 1.0);
 }
 
 vec4 getColor() {

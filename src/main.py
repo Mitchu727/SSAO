@@ -5,6 +5,7 @@ from moderngl_window.context.base import WindowConfig
 from pyrr import Matrix44, Vector3, vector, matrix33
 
 import config
+import random
 from point_light import lights_from_open_gl
 from utils import get_shaders
 
@@ -91,6 +92,7 @@ class SSAOWindow(WindowConfig):
         self.color = self.program['object_color']  # przekazywanie koloru do shadera
         self.use_texture = self.program['use_texture']
         self.texture_size = self.program['texture_scale']
+        self.samples = self.program['samples']
 
     def init_camera(self):
         self.camera_pos = Vector3([10.0, 0.0, 0.0])
@@ -98,6 +100,22 @@ class SSAOWindow(WindowConfig):
         self.camera_up = Vector3([0.0, 0, 1.0])
         self.camera_moving_speed = 0.1
         self.camera_rotation_speed = 0.1
+
+    def hemisphere(self, kernel_size=64):
+        samples = []
+        for i in range(kernel_size):
+            samples.append(
+                vector.normalize(
+                    Vector3(
+                        [
+                            random.uniform(-1., 1.),
+                            random.uniform(-1., 1.),
+                            random.uniform(0., 1.),
+                        ]
+                    )
+                )
+            )
+        return samples
 
     def setup_lights(self):
         self.point_lights[0].position.value = (5., 0., 0.)
@@ -148,6 +166,7 @@ class SSAOWindow(WindowConfig):
         )
         self.object_shininess.value = 1.0
         self.view_position.value = self.camera_pos
+        self.samples = self.hemisphere(64)
 
         # Tło
         self.render_vbo(self.cube,
