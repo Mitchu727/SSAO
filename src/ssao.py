@@ -217,13 +217,9 @@ class SSAODemo(WindowConfig):
         self.shading_program["light_pos"].value = self.camera_position
         self.shading_program["base_color"].value = tuple(self.base_color)
         self.shading_program["material_properties"].value = tuple(self.material_properties)
-        self.shading_program["render_mode"].value = 0
         self.g_view_z.use(location=0)
         self.g_normal.use(location=1)
-        if self.ssao_blur:
-            self.ssao_blurred_occlusion.use(location=2)
-        else:
-            self.ssao_occlusion.use(location=2)
+        self.ssao_occlusion.use(location=2)
         self.quad_fs.render(self.shading_program)
 
     def init_camera(self):

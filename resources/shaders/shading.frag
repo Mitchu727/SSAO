@@ -31,12 +31,7 @@ void main() {
     float diffuse_magnitude = material_properties.y;
     float specular_magnitude = material_properties.z;
     float specular_exponent = material_properties.w;
-    float occlusion;
-    if (render_mode != 1) {
-        occlusion = texture(ssao_occlusion, texcoord).x;
-    } else {
-        occlusion = 1.0;
-    }
+    float occlusion = texture(ssao_occlusion, texcoord).x;
     vec3 light_dir = normalize(light_pos - position);
     vec3 reflection_dir = reflect(-light_dir, normal);
     float ambient = ambient_magnitude * occlusion;
@@ -44,8 +39,5 @@ void main() {
     float specular = specular_magnitude * pow(max(dot(light_dir, normal), 0.0), specular_exponent);
     float luminosity = ambient + diffuse + specular;
     vec3 color = luminosity * base_color;
-    if (render_mode == 2) {
-        color = vec3(occlusion);
-    }
     frag_color = vec4(color, 1.0);
 }
