@@ -33,13 +33,6 @@ def _gather_shader_files(shader_directory_path: str) -> dict:
     return shaders
 
 
-def _load_shader(shader_path: str) -> str:
-    with open(shader_path) as f:
-        shader_text = f.read()
-
-    return shader_text
-
-
 def get_shaders(shader_directory_path: str) -> dict[str, ShaderCollection]:
     shaders = {}
     gathered_files = _gather_shader_files(shader_directory_path)
@@ -49,7 +42,9 @@ def get_shaders(shader_directory_path: str) -> dict[str, ShaderCollection]:
 
         for shader_path in shader_path_list:
             extension = os.path.splitext(shader_path)[1]
-            shader_text = _load_shader(shader_path)
+            with open(shader_path) as f:
+                text = f.read()
+            shader_text = text
             shader_collection.assign_shader(extension, shader_text)
 
         if not shader_collection.is_valid_collection():
