@@ -1,15 +1,20 @@
 import moderngl
 import numpy as np
-from moderngl import Texture, VertexArray, TextureCube
+from moderngl import Texture, VertexArray, TextureCube, Program
 from moderngl_window.context.base import WindowConfig
 from pyrr import Matrix44, Vector3, vector, matrix33
 
 import config
 from point_light import lights_from_open_gl
-from utils import get_shaders
+from utils import get_shaders, ShaderCollection
 
 
 class SSAOWindow(WindowConfig):
+    shading_program: Program
+    blur_program: Program
+    ssao_program: Program
+    geometry_program: Program
+
     gl_version = config.GL_VERSION
     title = config.WINDOW_TITLE
     resource_dir = config.RESOURCE_DIR
@@ -18,22 +23,45 @@ class SSAOWindow(WindowConfig):
         super(SSAOWindow, self).__init__(**kwargs)
         self.wnd.mouse_exclusivity = True
         shaders = get_shaders("../resources/shaders")
+
+        self.init_shaders(shaders)
+        self.init_models_textures()
+        self.init_camera()
+        
+    def init_shaders(self, shaders: dict[str, ShaderCollection]):
         self.geometry_program = self.ctx.program(
             vertex_shader=shaders["geometry"].vertex_shader,
             fragment_shader=shaders["geometry"].fragment_shader)
+
         self.ssao_program = self.ctx.program(
             vertex_shader=shaders["ssao"].vertex_shader,
             fragment_shader=shaders["ssao"].fragment_shader)
+        self.ssao_program["g_view_z"].value = 0
+        self.ssao_program["g_norm"].value = 1
+        self.ssao_program["noise"].value = 2
+
         self.blur_program = self.ctx.program(
             vertex_shader=shaders["blur"].vertex_shader,
             fragment_shader=shaders["blur"].fragment_shader)
+        self.blur_program["input_texture"].value = 0
+
         self.shading_program = self.ctx.program(
             vertex_shader=shaders["shading"].vertex_shader,
             fragment_shader=shaders["shading"].fragment_shader)
+        self.shading_program["g_view_z"].value = 0
+        self.shading_program["g_normal"].value = 1
+        self.shading_program["ssao_occlusion"].value = 2
 
-        self.init_shaders_variables()
-        self.init_models_textures()
-        self.init_camera()
+        # self.transform_matrix = self.program['transform_matrix']  # przekształcenie obiektu pierwotnego
+        # self.lookat = self.program['lookat']
+        # self.projection = self.program['projection']
+        # self.object_color = self.program['object_color']  # przekazywanie koloru do shadera
+        # self.object_shininess = self.program['object_shininess']  # przekazywanie koloru do shadera
+        # self.point_lights = lights_from_open_gl(self.program, 1)  # przekazywanie świateł do shadera4
+        # self.view_position = self.program['view_position']
+        # self.color = self.program['object_color']  # przekazywanie koloru do shadera
+        # self.use_texture = self.program['use_texture']
+        # self.texture_size = self.program['texture_scale']
 
     def unicode_char_entered(self, char: str):
         forward = self.camera_target
@@ -79,9 +107,9 @@ class SSAOWindow(WindowConfig):
 
     def init_models_textures(self):
         # wczytanie obiektów do późniejszego renderowania
-        self.sphere = self.load_scene("models/sphere.obj").root_nodes[0].mesh.vao.instance(self.program)
-        self.cube = self.load_scene("models/cube.obj").root_nodes[0].mesh.vao.instance(self.program)
-        self.teapot = self.load_scene("models/teapot.obj").root_nodes[0].mesh.vao.instance(self.program)
+        self.sphere = self.load_scene("models/sphere.obj").root_nodes[0].mesh.vao.instance(self.geometry_program)
+        self.cube = self.load_scene("models/cube.obj").root_nodes[0].mesh.vao.instance(self.geometry_program)
+        self.teapot = self.load_scene("models/teapot.obj").root_nodes[0].mesh.vao.instance(self.geometry_program)
 
         # tekstury
         self.wood_texture = self.load_texture_2d("textures/wood.jpg")
@@ -89,18 +117,6 @@ class SSAOWindow(WindowConfig):
         self.stone_texture = self.load_texture_2d("textures/stone.jpg")
         self.metal_texture = self.load_texture_2d("textures/metal.jpg")
         self.companion_cube = self.load_texture_cube(*["textures/companion_cube.jpg"] * 6)
-
-    def init_shaders_variables(self):
-        self.transform_matrix = self.program['transform_matrix']  # przekształcenie obiektu pierwotnego
-        self.lookat = self.program['lookat']
-        self.projection = self.program['projection']
-        self.object_color = self.program['object_color']  # przekazywanie koloru do shadera
-        self.object_shininess = self.program['object_shininess']  # przekazywanie koloru do shadera
-        self.point_lights = lights_from_open_gl(self.program, 1)  # przekazywanie świateł do shadera4
-        self.view_position = self.program['view_position']
-        self.color = self.program['object_color']  # przekazywanie koloru do shadera
-        self.use_texture = self.program['use_texture']
-        self.texture_size = self.program['texture_scale']
 
     def init_camera(self):
         self.camera_pos = Vector3([10.0, 0.0, 0.0])
@@ -199,6 +215,8 @@ class SSAOWindow(WindowConfig):
                         translation=Matrix44.from_translation([-6.0, -3.0, -4]),
                         rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
                         texture_cube=self.companion_cube)
+
+
 
 
 if __name__ == '__main__':
