@@ -18,8 +18,18 @@ class SSAOWindow(WindowConfig):
         super(SSAOWindow, self).__init__(**kwargs)
         self.wnd.mouse_exclusivity = True
         shaders = get_shaders("../resources/shaders")
-        self.program = self.ctx.program(vertex_shader=shaders["shader"].vertex_shader,
-                                        fragment_shader=shaders["shader"].fragment_shader)
+        self.geometry_program = self.ctx.program(
+            vertex_shader=shaders["geometry"].vertex_shader,
+            fragment_shader=shaders["geometry"].fragment_shader)
+        self.ssao_program = self.ctx.program(
+            vertex_shader=shaders["ssao"].vertex_shader,
+            fragment_shader=shaders["ssao"].fragment_shader)
+        self.blur_program = self.ctx.program(
+            vertex_shader=shaders["blur"].vertex_shader,
+            fragment_shader=shaders["blur"].fragment_shader)
+        self.shading_program = self.ctx.program(
+            vertex_shader=shaders["shading"].vertex_shader,
+            fragment_shader=shaders["shading"].fragment_shader)
 
         self.init_shaders_variables()
         self.init_models_textures()
