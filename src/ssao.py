@@ -105,15 +105,16 @@ class SSAODemo(WindowConfig):
             fragment_shader=shaders["ssao"].fragment_shader)
         self.ssao_program["g_view_z"].value = 0
         self.ssao_program["g_norm"].value = 1
-        self.ssao_program["noise"].value = 2
+        self.ssao_program["g_albedo_specular"].value = 2
+        self.ssao_program["noise"].value = 3
 
         self.shading_program = self.ctx.program(
             vertex_shader=shaders["shading"].vertex_shader,
             fragment_shader=shaders["shading"].fragment_shader)
         self.shading_program["g_view_z"].value = 0
         self.shading_program["g_normal"].value = 1
-        self.shading_program["ssao_occlusion"].value = 2
-        self.shading_program["g_albedo_specular"].value = 3
+        self.shading_program["g_albedo_specular"].value = 2
+        self.shading_program["ssao_occlusion"].value = 3
 
     def init_models_textures(self):
         # obiekty
@@ -150,7 +151,7 @@ class SSAODemo(WindowConfig):
         self.ctx.enable_only(moderngl.DEPTH_TEST | moderngl.CULL_FACE)
         self.g_buffer.clear(0.0, 0.0, 0.0)
         self.g_buffer.use()
-        self.g_albedo_specular.use(location=3)
+        # self.g_albedo_specular.use(location=3)
 
         self.render_object(obj=self.cube,
                            color=(0, 0.7, 0.1),
@@ -196,6 +197,7 @@ class SSAODemo(WindowConfig):
         #                    rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
         #                    texture_cube=self.companion_cube)
 
+
         # Calculate occlusion.
         self.ctx.disable(moderngl.DEPTH_TEST)
         self.ssao_buffer.clear(0.0)
@@ -205,7 +207,8 @@ class SSAODemo(WindowConfig):
         self.ssao_program["z_offset"].value = self.ssao_z_offset
         self.g_view_z.use(location=0)
         self.g_normal.use(location=1)
-        self.random_texture.use(location=2)
+        self.g_albedo_specular.use(location=2)
+        self.random_texture.use(location=3)
         self.quad_fs.render(self.ssao_program)
 
         # Run the shading pass.
@@ -218,8 +221,8 @@ class SSAODemo(WindowConfig):
         self.shading_program["material_properties"].value = tuple(self.material_properties)
         self.g_view_z.use(location=0)
         self.g_normal.use(location=1)
-        self.ssao_occlusion.use(location=2)
-        self.g_albedo_specular.use(location=3)
+        self.g_albedo_specular.use(location=2)
+        self.ssao_occlusion.use(location=3)
         self.quad_fs.render(self.shading_program)
 
     def init_camera(self):

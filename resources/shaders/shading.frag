@@ -8,8 +8,8 @@ uniform int render_mode;
 
 uniform sampler2D g_view_z;
 uniform sampler2D g_normal;
-uniform sampler2D ssao_occlusion;
 uniform sampler2D g_albedo_specular;
+uniform sampler2D ssao_occlusion;
 
 in vec3 view_ray;
 in vec2 texcoord;
@@ -28,7 +28,7 @@ void main() {
     vec3 normal = texture(g_normal, texcoord).xyz;
     vec3 Albedo = texture(g_albedo_specular, texcoord).xyz;
 
-//    Albedo = vec3(0.5, 0.5, 0.5);
+//    Albedo = vec3(1.0, 1.0, 1.0);
 //    float Specular = texture(g_albedo_specular, TexCoords).a;
 
     // Compute lighting.

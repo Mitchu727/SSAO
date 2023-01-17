@@ -12,7 +12,8 @@ in vec3 normal;
 
 layout(location=0) out float g_view_z;
 layout(location=1) out vec3 g_normal;
-layout(location=3) out vec4 g_albedo_specular;
+layout(location=2) out vec4 g_albedo_specular;
+//layout(location=3) out vec4 g_albedo_specular;
 
 void main() {
     // Rotate into view space, and record the z component.
@@ -21,9 +22,10 @@ void main() {
 
     vec3 color = tex_color;
 
-    g_albedo_specular.rgb = texture(texture_diffuse, texcoord).rgb;
+//    g_albedo_specular.rgb = texture(texture_diffuse, texcoord).rgb;
 //    g_albedo_specular.a = texture(texture_specular, texcoord).r;
 //    g_albedo_specular.rgb = tex_color;
-    g_albedo_specular.a = 1.0;
-    g_albedo_specular = vec4(0.5, 0.5, 0.5, 1.0);
+//    g_albedo_specular.a = 1.0;
+    g_albedo_specular = vec4(1.0, 1.0, 1.0, 0.5);
+//    g_albedo_specular = g_view_z;
 }
