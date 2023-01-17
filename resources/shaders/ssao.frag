@@ -9,7 +9,6 @@ uniform float z_offset;
 
 uniform sampler2D g_view_z;
 uniform sampler2D g_norm;
-uniform sampler2D g_albedo_specular;
 uniform sampler2D noise;
 
 in vec3 view_ray;
@@ -27,7 +26,6 @@ void main() {
     // Load/compute the position and normal vectors (in world coordinates).
     vec3 f_pos = f_camera_pos + f_view_z * view_ray;
     vec3 f_norm = texture(g_norm, texcoord).xyz;
-    g_albedo_specular;
     // Compute the rotation matrix that takes us from tangent space to world space.
     // Note that the x and y axes in tangent space aren't aligned with the texture coordinates or
     // anything -- they are intentionally randomized to decorrelate our samples in nearby pixels.

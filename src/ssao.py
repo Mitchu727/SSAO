@@ -70,11 +70,11 @@ class SSAODemo(WindowConfig):
 
     def render_object(self,
         color,
-        texture: Texture,
         obj: VertexArray,
         translation=Matrix44.identity(),
         rotation=Matrix44.identity(),
         scale=Matrix44.identity(),
+        texture: Texture = None,
         texture_cube: TextureCube = None,
         texture_scale=1.):
         self.geometry_program["transform_matrix"].write((translation * rotation * scale).astype('f4'))
@@ -103,7 +103,6 @@ class SSAODemo(WindowConfig):
             fragment_shader=shaders["ssao"].fragment_shader)
         self.ssao_program["g_view_z"].value = 0
         self.ssao_program["g_norm"].value = 1
-        self.ssao_program["g_albedo_specular"].value = 2
         self.ssao_program["noise"].value = 3
 
         self.shading_program = self.ctx.program(
@@ -163,20 +162,20 @@ class SSAODemo(WindowConfig):
                            texture=self.wood_texture)
          # Tło
 
-        # self.render_object(obj=self.cube,
-        #                    color=(255, 255, 255),
-        #                    translation=Matrix44.from_translation([-10.0, 0.0, 5.0]),
-        #                    scale=Matrix44.from_scale([10, 10, 0.1]),
-        #                    rotation=Matrix44.from_y_rotation(-np.pi / 2),
-        #                    texture=self.stone_texture,
-        #                    texture_scale=0.1)
-        #
+        self.render_object(obj=self.cube,
+                           color=(255, 255, 255),
+                           translation=Matrix44.from_translation([-10.0, 0.0, 5.0]),
+                           scale=Matrix44.from_scale([10, 10, 0.1]),
+                           rotation=Matrix44.from_y_rotation(-np.pi / 2),
+                           texture=self.stone_texture,
+                           texture_scale=0.1)
+
         # Piłka
         self.render_object(obj=self.sphere,
                            color=(10, 1000, 0),
                            translation=Matrix44.from_translation([-5.0, 0.0, -4.0]),
                            texture=self.football_texture)
-        #
+
         # # Smok
         # self.render_object(obj=self.dragon,
         #                    color=(255, 255, 0),
@@ -184,21 +183,21 @@ class SSAODemo(WindowConfig):
         #                    scale=Matrix44.from_scale([2, 2, 2]),
         #                    rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
         #                    texture=self.football_texture)
-        #
-        # # Dzban
+
+        # Dzban
         self.render_object(obj=self.teapot,
                            color=(0.6, 0, 1),
                            translation=Matrix44.from_translation([-6.0, 3.0, -3.5]),
                            # rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
                            scale=Matrix44.from_scale([0.2, 0.2, 0.2]),
                            texture=self.metal_texture)
-        #
+
         # # Kostka
-        # self.render_object(obj=self.cube,
-        #                    color=(0, 255, 0),
-        #                    translation=Matrix44.from_translation([-6.0, -3.0, -4]),
-        #                    rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
-        #                    texture_cube=self.companion_cube)
+        self.render_object(obj=self.cube,
+                           color=(0, 255, 0),
+                           translation=Matrix44.from_translation([-6.0, -3.0, -4]),
+                           rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
+                           texture_cube=self.companion_cube)
 
 
         # Calculate occlusion.
