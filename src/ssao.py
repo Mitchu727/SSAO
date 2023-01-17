@@ -78,21 +78,19 @@ class SSAODemo(WindowConfig):
         texture_cube: TextureCube = None,
         texture_scale=1.):
         self.geometry_program["transform_matrix"].write((translation * rotation * scale).astype('f4'))
-        # self.texture_size.write(np.array(texture_scale).astype("f4"))
-        # self.geometry_program["tex_color"].value = color
-        # self.shading_program["base_color"].value = color
+        self.texture_scale.write(np.array(texture_scale).astype("f4"))
 
         if texture is not None and texture_cube is not None:
             raise Exception("You cannot apply texture_2d and texture_cube at the same time.")
 
-        # if texture_cube is not None:
-        #     # self.use_texture.value = 2
-        #     texture_cube.use()
-        # elif texture is not None:
-            # self.use_texture.value = 1
-        texture.use()
-        # else:
-        # self.use_texture.value = 0
+        if texture_cube is not None:
+            self.use_texture.value = 2
+            texture_cube.use()
+        elif texture is not None:
+            self.use_texture.value = 1
+            texture.use()
+        else:
+            self.use_texture.value = 0
         obj.render()
 
     def init_shaders(self, shaders):
@@ -129,6 +127,11 @@ class SSAODemo(WindowConfig):
         self.stone_texture = self.load_texture_2d("textures/stone.jpg")
         self.metal_texture = self.load_texture_2d("textures/metal.jpg")
         self.companion_cube = self.load_texture_cube(*["textures/companion_cube.jpg"] * 6)
+
+        #tekstury, ale biedne
+        self.color = self.geometry_program['object_color']  # przekazywanie koloru do shadera
+        self.texture_scale = self.geometry_program['texture_scale']
+        self.use_texture = self.geometry_program['use_texture']
 
 
 

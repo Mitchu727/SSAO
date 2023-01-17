@@ -61,7 +61,7 @@ class SSAOWindow(WindowConfig):
         # self.view_position = self.program['view_position']
         # self.color = self.program['object_color']  # przekazywanie koloru do shadera
         # self.use_texture = self.program['use_texture']
-        # self.texture_size = self.program['texture_scale']
+        self.texture_size = self.program['texture_scale']
 
     def unicode_char_entered(self, char: str):
         forward = self.camera_target
