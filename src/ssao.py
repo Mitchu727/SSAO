@@ -113,6 +113,7 @@ class SSAODemo(WindowConfig):
         self.shading_program["g_view_z"].value = 0
         self.shading_program["g_normal"].value = 1
         self.shading_program["ssao_occlusion"].value = 2
+        self.shading_program["g_albedo_specular"].value = 3
 
     def init_models_textures(self):
         # obiekty

@@ -25,5 +25,5 @@ void main() {
 //    g_albedo_specular.a = texture(texture_specular, texcoord).r;
 //    g_albedo_specular.rgb = tex_color;
     g_albedo_specular.a = 1.0;
-    g_albedo_specular = vec4(1, 1, 1, 0.5);
+    g_albedo_specular = vec4(0.5, 0.5, 0.5, 1.0);
 }
