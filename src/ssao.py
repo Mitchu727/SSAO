@@ -1,5 +1,3 @@
-from abc import ABC
-
 import moderngl
 import numpy as np
 from moderngl import Texture, TextureCube, VertexArray
@@ -24,7 +22,7 @@ class SSAODemo(SSAOWindow):
         self.ssao_z_offset = 0.0
         self.ssao_blur = False
 
-        # Create the geometry framebuffer.
+        # Create the geometry frame-buffer
         self.g_view_z = self.ctx.texture(self.wnd.buffer_size, 1, dtype="f2")
         self.g_normal = self.ctx.texture(self.wnd.buffer_size, 3, dtype="f2")
         self.g_albedo_specular = self.ctx.texture(self.wnd.buffer_size, 4, dtype="f2")
@@ -34,7 +32,7 @@ class SSAODemo(SSAOWindow):
             depth_attachment=self.g_depth
         )
 
-        # Generate the SSAO framebuffer.
+        # Generate the SSAO frame-buffer
         self.ssao_occlusion = self.ctx.texture(self.wnd.buffer_size, 1, dtype="f1")
         self.ssao_buffer = self.ctx.framebuffer(color_attachments=[self.ssao_occlusion])
 
@@ -118,25 +116,24 @@ class SSAODemo(SSAOWindow):
         self.shading_program["ssao_occlusion"].value = 3
 
     def init_models_textures(self):
-        # obiekty
+        # Scene objects
         self.sphere = self.load_scene("models/sphere.obj").root_nodes[0].mesh.vao.instance(self.geometry_program)
         self.cube = self.load_scene("models/cube.obj").root_nodes[0].mesh.vao.instance(self.geometry_program)
         self.teapot = self.load_scene("models/teapot.obj").root_nodes[0].mesh.vao.instance(self.geometry_program)
         # self.dragon = self.load_scene('models/stanford_dragon.obj').root_nodes[0].mesh.vao.instance(self.geometry_program)
 
-        # tekstury
+        # Textures
         self.wood_texture = self.load_texture_2d("textures/wood.jpg")
         self.football_texture = self.load_texture_2d("textures/football.jpg")
         self.stone_texture = self.load_texture_2d("textures/stone.jpg")
         self.metal_texture = self.load_texture_2d("textures/metal.jpg")
         self.companion_cube = self.load_texture_cube(*["textures/companion_cube.jpg"] * 6)
 
-        # tekstury, ale biedne
         self.color = self.geometry_program['object_color']
         self.texture_scale = self.geometry_program['texture_scale']
         self.use_texture = self.geometry_program['use_texture']
 
-    def render(self, time: float, frametime: float):
+    def render(self, time: float, frame_time: float):
         projection_matrix = Matrix44.perspective_projection(45.0, self.aspect_ratio, 0.1, 1000.0)
         camera_matrix = Matrix44.look_at(
             self.camera_position,
@@ -151,7 +148,7 @@ class SSAODemo(SSAOWindow):
         self.shading_program["m_camera_inverse"].write(camera_matrix.inverse.astype('f4'))
         self.shading_program["m_projection_inverse"].write(projection_matrix.inverse.astype('f4'))
 
-        # Run the geometry pass.
+        # Geometry pass
         self.ctx.enable_only(moderngl.DEPTH_TEST | moderngl.CULL_FACE)
         self.g_buffer.clear(0.0, 0.0, 0.0)
         self.g_buffer.use()
@@ -199,7 +196,7 @@ class SSAODemo(SSAOWindow):
                            translation=Matrix44.from_translation([-6.0, -3.0, -4]),
                            rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
                            texture_cube=self.companion_cube,
-                            texture_scale=2)
+                           texture_scale=2)
 
         # Calculate occlusion
         self.ctx.disable(moderngl.DEPTH_TEST)
@@ -214,7 +211,7 @@ class SSAODemo(SSAOWindow):
         self.random_texture.use(location=3)
         self.quad_fs.render(self.ssao_program)
 
-        # Run the shading pass.
+        # Shading pass
         self.ctx.screen.clear(1.0, 1.0, 1.0)
         self.ctx.screen.use()
         self.shading_program["v_camera_pos"].value = self.camera_position
