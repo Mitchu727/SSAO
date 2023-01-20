@@ -87,10 +87,10 @@ class SSAODemo(SSAOWindow):
 
         if texture_cube is not None:
             self.use_texture.value = 2
-            texture_cube.use()
+            texture_cube.use(location=1)
         elif texture is not None:
             self.use_texture.value = 1
-            texture.use()
+            texture.use(location=0)
         else:
             self.use_texture.value = 0
         obj.render()
@@ -99,6 +99,8 @@ class SSAODemo(SSAOWindow):
         self.geometry_program = self.ctx.program(
             vertex_shader=shaders["geometry"].vertex_shader,
             fragment_shader=shaders["geometry"].fragment_shader)
+        self.geometry_program['tex'] = 0
+        self.geometry_program['texCube'] = 1
 
         self.ssao_program = self.ctx.program(
             vertex_shader=shaders["ssao"].vertex_shader,
@@ -195,8 +197,7 @@ class SSAODemo(SSAOWindow):
                            color=(0, 255, 0),
                            translation=Matrix44.from_translation([-6.0, -3.0, -4]),
                            rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
-                           texture_cube=self.companion_cube,
-                           texture_scale=2)
+                           texture_cube=self.companion_cube)
 
         # Calculate occlusion
         self.ctx.disable(moderngl.DEPTH_TEST)
