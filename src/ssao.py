@@ -122,13 +122,14 @@ class SSAODemo(SSAOWindow):
         self.sphere = self.load_scene("models/sphere.obj").root_nodes[0].mesh.vao.instance(self.geometry_program)
         self.cube = self.load_scene("models/cube.obj").root_nodes[0].mesh.vao.instance(self.geometry_program)
         self.teapot = self.load_scene("models/teapot.obj").root_nodes[0].mesh.vao.instance(self.geometry_program)
-        # self.dragon = self.load_scene('models/stanford_dragon.obj').root_nodes[0].mesh.vao.instance(self.geometry_program)
+        self.dragon = self.load_scene('models/stanford_dragon.obj').root_nodes[0].mesh.vao.instance(self.geometry_program)
 
         # Textures
         self.wood_texture = self.load_texture_2d("textures/wood.jpg")
         self.football_texture = self.load_texture_2d("textures/football.jpg")
         self.stone_texture = self.load_texture_2d("textures/stone.jpg")
         self.metal_texture = self.load_texture_2d("textures/metal.jpg")
+        self.dragon_scales_texture = self.load_texture_2d("textures/dragon_scales.jpg")
         self.companion_cube = self.load_texture_cube(*["textures/companion_cube.jpg"] * 6)
 
         self.color = self.geometry_program['object_color']
@@ -176,13 +177,13 @@ class SSAODemo(SSAOWindow):
                            translation=Matrix44.from_translation([-5.0, 0.0, -4.0]),
                            texture=self.football_texture)
 
-        # # Dragon
-        # self.render_object(obj=self.dragon,
-        #                    color=(255, 255, 0),
-        #                    translation=Matrix44.from_translation([0.0, -5.0, -3.0]),
-        #                    scale=Matrix44.from_scale([2, 2, 2]),
-        #                    rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
-        #                    texture=self.football_texture)
+        # Dragon
+        self.render_object(obj=self.dragon,
+                           color=(255, 255, 0),
+                           translation=Matrix44.from_translation([0.0, -5.0, -3.0]),
+                           scale=Matrix44.from_scale([2, 2, 2]),
+                           rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
+                           texture=self.dragon_scales_texture)
 
         # Teapot
         self.render_object(obj=self.teapot,
