@@ -71,8 +71,8 @@ class SSAODemo(SSAOWindow):
             self.ssao_program["n_samples"].value = self.current_ssao_samples_qty
 
     def render_object(self,
-                      color,
                       obj: VertexArray,
+                      color = (1., 1., 1.),
                       translation=Matrix44.identity(),
                       rotation=Matrix44.identity(),
                       scale=Matrix44.identity(),
@@ -80,19 +80,19 @@ class SSAODemo(SSAOWindow):
                       texture_cube: TextureCube = None,
                       texture_scale=1.):
         self.geometry_program["transform_matrix"].write((translation * rotation * scale).astype('f4'))
-        self.texture_scale.write(np.array(texture_scale).astype("f4"))
-
+        self.geometry_program['texture_scale'].write(np.array(texture_scale).astype("f4"))
+        self.geometry_program['object_color'].write(np.array(color).astype("f4"))
         if texture is not None and texture_cube is not None:
             raise Exception("You cannot apply texture_2d and texture_cube at the same time.")
 
         if texture_cube is not None:
-            self.use_texture.value = 2
+            self.geometry_program['use_texture'].value = 2
             texture_cube.use(location=1)
         elif texture is not None:
-            self.use_texture.value = 1
+            self.geometry_program['use_texture'].value = 1
             texture.use(location=0)
         else:
-            self.use_texture.value = 0
+            self.geometry_program['use_texture'].value = 0
         obj.render()
 
     def init_shaders(self, shaders):
@@ -132,9 +132,6 @@ class SSAODemo(SSAOWindow):
         self.dragon_scales_texture = self.load_texture_2d("textures/dragon_scales.jpg")
         self.companion_cube = self.load_texture_cube(*["textures/companion_cube.jpg"] * 6)
 
-        self.color = self.geometry_program['object_color']
-        self.texture_scale = self.geometry_program['texture_scale']
-        self.use_texture = self.geometry_program['use_texture']
 
     def render(self, time: float, frame_time: float):
         projection_matrix = Matrix44.perspective_projection(45.0, self.aspect_ratio, 0.1, 1000.0)
@@ -156,15 +153,15 @@ class SSAODemo(SSAOWindow):
         self.g_buffer.clear(0.0, 0.0, 0.0)
         self.g_buffer.use()
 
+
         self.render_object(obj=self.cube,
-                           color=(0, 0.7, 0.1),
                            translation=Matrix44.from_translation([0.0, 0.0, -5.0]),
                            scale=Matrix44.from_scale([10, 10, 0.1]),
                            texture=self.wood_texture)
 
         # Background
         self.render_object(obj=self.cube,
-                           color=(255, 255, 255),
+                           color=(1, 1, 1),
                            translation=Matrix44.from_translation([-10.0, 0.0, 5.0]),
                            scale=Matrix44.from_scale([10, 10, 0.1]),
                            rotation=Matrix44.from_y_rotation(-np.pi / 2),
@@ -173,13 +170,13 @@ class SSAODemo(SSAOWindow):
 
         # Ball
         self.render_object(obj=self.sphere,
-                           color=(10, 1000, 0),
+                           color=(1, 1, 0),
                            translation=Matrix44.from_translation([-5.0, 0.0, -4.0]),
                            texture=self.football_texture)
 
         # Dragon
         self.render_object(obj=self.dragon,
-                           color=(255, 255, 0),
+                           color=(1, 1, 0),
                            translation=Matrix44.from_translation([0.0, -5.0, -3.0]),
                            scale=Matrix44.from_scale([2, 2, 2]),
                            rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
@@ -195,7 +192,7 @@ class SSAODemo(SSAOWindow):
 
         # Companion cube
         self.render_object(obj=self.cube,
-                           color=(0, 255, 0),
+                           color=(0, 1, 0),
                            translation=Matrix44.from_translation([-6.0, -3.0, -4]),
                            rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
                            texture_cube=self.companion_cube)
