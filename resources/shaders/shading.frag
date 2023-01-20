@@ -17,16 +17,16 @@ in vec2 texcoord;
 layout(location=0) out vec4 frag_color;
 
 void main() {
-    // Ignore background fragments.
+    // Ignore background fragments
     float view_z = texture(g_view_z, texcoord).x;
     if (view_z == 0.0) {
         discard;
     }
 
-    // Load/compute the position and normal vectors (in world space).
+    // Load/compute the position and normal vectors (in world space)
     vec3 position = camera_pos + view_z * view_ray;
     vec3 normal = texture(g_normal, texcoord).xyz;
-    vec3 Albedo = texture(g_albedo_specular, texcoord).xyz;
+    vec3 albedo = texture(g_albedo_specular, texcoord).xyz;
 
     // Compute lighting
     float ambient_magnitude = material_properties.x;
@@ -43,6 +43,6 @@ void main() {
     float specular = specular_magnitude * pow(max(dot(light_dir, normal), 0.0), specular_exponent);
 
     float luminosity = ambient + diffuse + specular;
-    vec3 color = luminosity * Albedo;
+    vec3 color = luminosity * albedo;
     frag_color = vec4(color, 1.0);
 }

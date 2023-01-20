@@ -18,7 +18,7 @@ in vec2 texcoord;
 layout(location=0) out float occlusion;
 
 void main() {
-    // Ignore background fragments.
+    // Ignore background fragments
     float f_view_z = texture(g_view_z, texcoord).x;
     if (f_view_z == 0.0) {
         discard;
