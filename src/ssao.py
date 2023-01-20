@@ -12,7 +12,6 @@ MAX_SSAO_SAMPLES_QUANTITY = 100
 
 
 class SSAODemo(WindowConfig):
-    title = "SSAO"
     gl_version = config.GL_VERSION
     title = config.WINDOW_TITLE
     resource_dir = config.RESOURCE_DIR
@@ -23,7 +22,6 @@ class SSAODemo(WindowConfig):
 
         self.init_camera()
 
-        # self.base_color = (0.9, 0.1, 0.8)
         self.material_properties = [0.5, 0.5, 0.25, 25.0]
         self.ssao_z_offset = 0.0
         self.ssao_blur = False
@@ -47,10 +45,9 @@ class SSAODemo(WindowConfig):
         self.init_shaders(shaders)
         self.init_models_textures()
 
-        # Generate a fullscreen quad.
         self.quad_fs = geometry.quad_fs()
 
-        # Generate SSAO samples (in tangent space coordinates, with z along the normal).
+        # Generate SSAO samples
         self.current_ssao_samples_qty = 64
         self.ssao_program["n_samples"].value = self.current_ssao_samples_qty
         self.ssao_std_dev = 0.1
@@ -58,8 +55,8 @@ class SSAODemo(WindowConfig):
         self.ssao_samples[:, 2] = np.abs(self.ssao_samples[:, 2])
         self.ssao_program["samples"].write(self.ssao_samples.ravel().astype('f4'))
 
-        # Create random vectors used to decorrelate SSAO samples.
-        rand_texture_size = 32  # If you change this number, also change ssao.glgl.
+        # Create random vectors
+        rand_texture_size = 32
         rand_texture_data = np.random.bytes(3 * rand_texture_size * rand_texture_size)
         self.random_texture = self.ctx.texture(
             (rand_texture_size, rand_texture_size),
@@ -79,14 +76,14 @@ class SSAODemo(WindowConfig):
             self.ssao_program["n_samples"].value = self.current_ssao_samples_qty
 
     def render_object(self,
-        color,
-        obj: VertexArray,
-        translation=Matrix44.identity(),
-        rotation=Matrix44.identity(),
-        scale=Matrix44.identity(),
-        texture: Texture = None,
-        texture_cube: TextureCube = None,
-        texture_scale=1.):
+                      color,
+                      obj: VertexArray,
+                      translation=Matrix44.identity(),
+                      rotation=Matrix44.identity(),
+                      scale=Matrix44.identity(),
+                      texture: Texture = None,
+                      texture_cube: TextureCube = None,
+                      texture_scale=1.):
         self.geometry_program["transform_matrix"].write((translation * rotation * scale).astype('f4'))
         self.texture_scale.write(np.array(texture_scale).astype("f4"))
 
@@ -137,12 +134,10 @@ class SSAODemo(WindowConfig):
         self.metal_texture = self.load_texture_2d("textures/metal.jpg")
         self.companion_cube = self.load_texture_cube(*["textures/companion_cube.jpg"] * 6)
 
-        #tekstury, ale biedne
-        self.color = self.geometry_program['object_color']  # przekazywanie koloru do shadera
+        # tekstury, ale biedne
+        self.color = self.geometry_program['object_color']
         self.texture_scale = self.geometry_program['texture_scale']
         self.use_texture = self.geometry_program['use_texture']
-
-
 
     def render(self, time: float, frametime: float):
         projection_matrix = Matrix44.perspective_projection(45.0, self.aspect_ratio, 0.1, 1000.0)
@@ -163,15 +158,14 @@ class SSAODemo(WindowConfig):
         self.ctx.enable_only(moderngl.DEPTH_TEST | moderngl.CULL_FACE)
         self.g_buffer.clear(0.0, 0.0, 0.0)
         self.g_buffer.use()
-        # self.g_albedo_specular.use(location=3)
 
         self.render_object(obj=self.cube,
                            color=(0, 0.7, 0.1),
                            translation=Matrix44.from_translation([0.0, 0.0, -5.0]),
                            scale=Matrix44.from_scale([10, 10, 0.1]),
                            texture=self.wood_texture)
-         # Tło
 
+        # Background
         self.render_object(obj=self.cube,
                            color=(255, 255, 255),
                            translation=Matrix44.from_translation([-10.0, 0.0, 5.0]),
@@ -180,13 +174,13 @@ class SSAODemo(WindowConfig):
                            texture=self.stone_texture,
                            texture_scale=0.1)
 
-        # Piłka
+        # Ball
         self.render_object(obj=self.sphere,
                            color=(10, 1000, 0),
                            translation=Matrix44.from_translation([-5.0, 0.0, -4.0]),
                            texture=self.football_texture)
 
-        # # Smok
+        # # Dragon
         # self.render_object(obj=self.dragon,
         #                    color=(255, 255, 0),
         #                    translation=Matrix44.from_translation([0.0, -5.0, -3.0]),
@@ -194,7 +188,7 @@ class SSAODemo(WindowConfig):
         #                    rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
         #                    texture=self.football_texture)
 
-        # Dzban
+        # Teapot
         self.render_object(obj=self.teapot,
                            color=(0.6, 0, 1),
                            translation=Matrix44.from_translation([-6.0, 3.0, -3.5]),
@@ -202,15 +196,14 @@ class SSAODemo(WindowConfig):
                            scale=Matrix44.from_scale([0.2, 0.2, 0.2]),
                            texture=self.metal_texture)
 
-        # # Kostka
+        # # Companion cube
         # self.render_object(obj=self.cube,
         #                    color=(0, 255, 0),
         #                    translation=Matrix44.from_translation([-6.0, -3.0, -4]),
         #                    rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
         #                    texture_cube=self.companion_cube)
 
-
-        # Calculate occlusion.
+        # Calculate occlusion
         self.ctx.disable(moderngl.DEPTH_TEST)
         self.ssao_buffer.clear(0.0)
         self.ssao_buffer.use()
@@ -229,7 +222,6 @@ class SSAODemo(WindowConfig):
         self.shading_program["v_camera_pos"].value = self.camera_position
         self.shading_program["camera_pos"].value = self.camera_position
         self.shading_program["light_pos"].value = self.camera_position
-        # self.shading_program["base_color"].value = tuple(self.base_color)
         self.shading_program["material_properties"].value = tuple(self.material_properties)
         self.g_view_z.use(location=0)
         self.g_normal.use(location=1)

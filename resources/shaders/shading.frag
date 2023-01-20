@@ -28,10 +28,7 @@ void main() {
     vec3 normal = texture(g_normal, texcoord).xyz;
     vec3 Albedo = texture(g_albedo_specular, texcoord).xyz;
 
-//    Albedo = vec3(1.0, 1.0, 1.0);
-//    float Specular = texture(g_albedo_specular, TexCoords).a;
-
-    // Compute lighting.
+    // Compute lighting
     float ambient_magnitude = material_properties.x;
     float diffuse_magnitude = material_properties.y;
     float specular_magnitude = material_properties.z;
@@ -46,8 +43,6 @@ void main() {
     float specular = specular_magnitude * pow(max(dot(light_dir, normal), 0.0), specular_exponent);
 
     float luminosity = ambient + diffuse + specular;
-//    vec3 color = luminosity * base_color;
     vec3 color = luminosity * Albedo;
-//    vec3 color = Albedo;
     frag_color = vec4(color, 1.0);
 }
