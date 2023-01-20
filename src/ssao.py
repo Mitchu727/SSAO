@@ -8,6 +8,8 @@ from pyrr import Vector3, vector, matrix33, Matrix44
 import config
 from utils import get_shaders
 
+MAX_SSAO_SAMPLES_QUANTITY = 100
+
 
 class SSAODemo(WindowConfig):
     title = "SSAO"
@@ -49,9 +51,10 @@ class SSAODemo(WindowConfig):
         self.quad_fs = geometry.quad_fs()
 
         # Generate SSAO samples (in tangent space coordinates, with z along the normal).
-        self.n_ssao_samples = 64  # If you change this number, also change ssao.glsl.
+        self.current_ssao_samples_qty = 64
+        self.ssao_program["n_samples"].value = self.current_ssao_samples_qty
         self.ssao_std_dev = 0.1
-        self.ssao_samples = np.random.normal(0.0, self.ssao_std_dev, (self.n_ssao_samples, 3))
+        self.ssao_samples = np.random.normal(0.0, self.ssao_std_dev, (MAX_SSAO_SAMPLES_QUANTITY, 3))
         self.ssao_samples[:, 2] = np.abs(self.ssao_samples[:, 2])
         self.ssao_program["samples"].write(self.ssao_samples.ravel().astype('f4'))
 
@@ -67,6 +70,13 @@ class SSAODemo(WindowConfig):
         self.random_texture.filter = (moderngl.NEAREST, moderngl.NEAREST)
         self.random_texture.repeat_x = True
         self.random_texture.repeat_y = True
+
+    def change_ssao_samples_quantity(self, sample_delta: int):
+        new_samples_qty = self.current_ssao_samples_qty + sample_delta
+        if 0 < new_samples_qty <= MAX_SSAO_SAMPLES_QUANTITY:
+            print(f"New samples quantity: {new_samples_qty}")
+            self.current_ssao_samples_qty = new_samples_qty
+            self.ssao_program["n_samples"].value = self.current_ssao_samples_qty
 
     def render_object(self,
         color,
@@ -257,6 +267,10 @@ class SSAODemo(WindowConfig):
         if char.lower() == "e":
             forward_rotation = matrix33.create_from_axis_rotation(forward, 2 * np.pi / 45 * self.camera_rotation_speed)
             self.rotate_camera(forward_rotation)
+        if char.lower() == ",":
+            self.change_ssao_samples_quantity(-1)
+        if char.lower() == ".":
+            self.change_ssao_samples_quantity(1)
 
     def move_camera(self, moving_vector):
         self.camera_position += moving_vector

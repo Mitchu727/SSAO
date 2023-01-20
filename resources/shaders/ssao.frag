@@ -1,10 +1,11 @@
 #version 330
 
-const int n_samples = 64;
+const int MAX_SSAO_SAMPLES_QUANTITY = 100;
 
 uniform vec3 f_camera_pos;
 uniform mat4 mvp;
-uniform vec3 samples[n_samples];
+uniform int n_samples;
+uniform vec3 samples[MAX_SSAO_SAMPLES_QUANTITY];
 uniform float z_offset;
 
 uniform sampler2D g_view_z;
