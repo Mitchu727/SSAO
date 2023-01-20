@@ -4,73 +4,13 @@ import moderngl
 import numpy as np
 from moderngl import Texture, TextureCube, VertexArray
 from moderngl_window import geometry
-from moderngl_window.context.base import WindowConfig
-from pyrr import Vector3, vector, matrix33, Matrix44
+from pyrr import Matrix44
 
 import config
+from src.ssao_window import SSAOWindow
 from utils import get_shaders
 
 MAX_SSAO_SAMPLES_QUANTITY = 100
-
-
-class SSAOWindow(WindowConfig, ABC):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.camera_position = Vector3([10.0, 0.0, 0])
-        self.camera_target = Vector3([-1.0, 0, 0.0])
-        self.camera_up = Vector3([0.0, 0, 1.0])
-        self.camera_moving_speed = 0.1
-        self.camera_rotation_speed = 0.1
-
-        self.wnd.mouse_exclusivity = True
-
-    def unicode_char_entered(self, char: str):
-        forward = self.camera_target
-        side = vector.normalize(np.cross(forward, self.camera_up))
-        up = self.camera_up
-
-        if char.lower() == "w":
-            self.move_camera(forward * self.camera_moving_speed)
-        if char.lower() == "s":
-            self.move_camera(-forward * self.camera_moving_speed)
-        if char.lower() == "d":
-            self.move_camera(side * self.camera_moving_speed)
-        if char.lower() == "a":
-            self.move_camera(-side * self.camera_moving_speed)
-        if char.lower() == " ":
-            self.move_camera(up * self.camera_moving_speed)
-        if char.lower() == "c":
-            self.move_camera(-up * self.camera_moving_speed)
-        if char.lower() == "q":
-            forward_rotation = matrix33.create_from_axis_rotation(forward, 2 * -np.pi / 45 * self.camera_rotation_speed)
-            self.rotate_camera(forward_rotation)
-        if char.lower() == "e":
-            forward_rotation = matrix33.create_from_axis_rotation(forward, 2 * np.pi / 45 * self.camera_rotation_speed)
-            self.rotate_camera(forward_rotation)
-
-        self.check_implementation_specific_characters(char)
-
-    def check_implementation_specific_characters(self, char: str):
-        raise "Not implemented"
-
-    def move_camera(self, moving_vector):
-        self.camera_position += moving_vector
-        # print(f"New camera position: {self.camera_position}")
-
-    def rotate_camera(self, rotation_matrix):
-        self.camera_target = vector.normalize(matrix33.apply_to_vector(rotation_matrix, self.camera_target))
-        self.camera_up = vector.normalize(matrix33.apply_to_vector(rotation_matrix, self.camera_up))
-        # print(f"New camera vector: {self.camera_target}")
-        # print(f"New camera up: {self.camera_up}")
-
-    def mouse_position_event(self, x, y, dx, dy):
-        side = vector.normalize(np.cross(self.camera_target, self.camera_up))
-
-        z_rotation_matrix = matrix33.create_from_z_rotation(np.pi / 180 * self.camera_rotation_speed * dx)
-        self.rotate_camera(z_rotation_matrix)
-
-        side_rotation = matrix33.create_from_axis_rotation(side, -np.pi / 180 * self.camera_rotation_speed * dy)
-        self.rotate_camera(side_rotation)
 
 
 class SSAODemo(SSAOWindow):
@@ -88,7 +28,6 @@ class SSAODemo(SSAOWindow):
         self.g_view_z = self.ctx.texture(self.wnd.buffer_size, 1, dtype="f2")
         self.g_normal = self.ctx.texture(self.wnd.buffer_size, 3, dtype="f2")
         self.g_albedo_specular = self.ctx.texture(self.wnd.buffer_size, 4, dtype="f2")
-        print(f"ALBEDO SPEC: {self.g_albedo_specular}")
         self.g_depth = self.ctx.depth_texture(self.wnd.buffer_size)
         self.g_buffer = self.ctx.framebuffer(
             color_attachments=[self.g_view_z, self.g_normal, self.g_albedo_specular],
@@ -99,7 +38,7 @@ class SSAODemo(SSAOWindow):
         self.ssao_occlusion = self.ctx.texture(self.wnd.buffer_size, 1, dtype="f1")
         self.ssao_buffer = self.ctx.framebuffer(color_attachments=[self.ssao_occlusion])
 
-        shaders = get_shaders("../resources/shaders")
+        shaders = get_shaders(f"{config.RESOURCE_DIR}/shaders")
         self.init_shaders(shaders)
         self.init_models_textures()
 
@@ -254,7 +193,7 @@ class SSAODemo(SSAOWindow):
                            scale=Matrix44.from_scale([0.2, 0.2, 0.2]),
                            texture=self.metal_texture)
 
-        # # Companion cube
+        # Companion cube
         self.render_object(obj=self.cube,
                            color=(0, 255, 0),
                            translation=Matrix44.from_translation([-6.0, -3.0, -4]),
