@@ -10,6 +10,7 @@ in vec2 in_texcoord_0;
 
 out vec2 texcoord;
 out vec3 pos;
+out vec3 texcoord_3D;
 out vec3 normal;
 
 void main() {
@@ -17,4 +18,5 @@ void main() {
     pos = vec3(transform_matrix * vec4(in_position, 1.0));
     normal = mat3(transpose(inverse(transform_matrix))) * in_normal;
     texcoord = in_texcoord_0;
+    texcoord_3D = in_position;
 }

@@ -197,11 +197,12 @@ class SSAODemo(WindowConfig):
                            texture=self.metal_texture)
 
         # # Companion cube
-        # self.render_object(obj=self.cube,
-        #                    color=(0, 255, 0),
-        #                    translation=Matrix44.from_translation([-6.0, -3.0, -4]),
-        #                    rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
-        #                    texture_cube=self.companion_cube)
+        self.render_object(obj=self.cube,
+                           color=(0, 255, 0),
+                           translation=Matrix44.from_translation([-6.0, -3.0, -4]),
+                           rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
+                           texture_cube=self.companion_cube,
+                            texture_scale=2)
 
         # Calculate occlusion
         self.ctx.disable(moderngl.DEPTH_TEST)
