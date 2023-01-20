@@ -12,6 +12,7 @@ uniform vec3 object_color;
 
 
 in vec2 texcoord;
+in vec3 texcoord_3D;
 in vec3 pos;
 in vec3 normal;
 
@@ -38,7 +39,7 @@ vec4 getColor() {
             color = texture(tex, texcoord/texture_scale).rgba;
             break;
         case 2:
-            color = texture(texCube, pos).rgba;
+            color = texture(texCube, texcoord_3D).rgba;
             break;
     }
     return color;
