@@ -7,6 +7,7 @@ from pyrr import Matrix44
 import config
 from src.ssao_window import SSAOWindow
 from utils import get_shaders
+from point_light import lights_from_open_gl
 
 MAX_SSAO_SAMPLES_QUANTITY = 100
 
@@ -70,6 +71,14 @@ class SSAODemo(SSAOWindow):
             self.current_ssao_samples_qty = new_samples_qty
             self.ssao_program["n_samples"].value = self.current_ssao_samples_qty
 
+    def setup_lights(self):
+        self.point_lights[0].position.value = (20., -20., 0.)
+        self.point_lights[1].position.value = (0., 20., 0.)
+        # self.point_lights[0].color.value = (1., 1., 1.)
+        # self.point_lights[0].ambient_strength.value = 0.25
+        # self.point_lights[0].diffuse_strength.value = 0.5
+        # self.point_lights[0].specular_strength.value = 1
+
     def render_object(self,
                       obj: VertexArray,
                       color = (1., 1., 1.),
@@ -125,6 +134,7 @@ class SSAODemo(SSAOWindow):
         self.dragon = self.load_scene('models/stanford_dragon.obj').root_nodes[0].mesh.vao.instance(self.geometry_program)
 
         # Textures
+        self.point_lights = lights_from_open_gl(self.shading_program, 2)
         self.wood_texture = self.load_texture_2d("textures/wood.jpg")
         self.football_texture = self.load_texture_2d("textures/football.jpg")
         self.stone_texture = self.load_texture_2d("textures/stone.jpg")
@@ -213,9 +223,10 @@ class SSAODemo(SSAOWindow):
         # Shading pass
         self.ctx.screen.clear(1.0, 1.0, 1.0)
         self.ctx.screen.use()
+        self.setup_lights()
         self.shading_program["v_camera_pos"].value = self.camera_position
         self.shading_program["camera_pos"].value = self.camera_position
-        self.shading_program["light_pos"].value = self.camera_position
+        # self.shading_program["light_pos"].value = self.camera_position
         self.shading_program["material_properties"].value = tuple(self.material_properties)
         self.g_view_z.use(location=0)
         self.g_normal.use(location=1)
