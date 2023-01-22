@@ -2,7 +2,7 @@
 
 uniform mat4 m_camera_inverse;
 uniform mat4 m_projection_inverse;
-uniform vec3 v_camera_pos;
+uniform vec3 camera_pos;
 
 in vec3 in_position;
 in vec2 in_texcoord_0;
@@ -19,7 +19,7 @@ void main() {
     pos.w = 1.0;
 
     pos = m_camera_inverse * pos;
-    view_ray = pos.xyz - v_camera_pos;
+    view_ray = pos.xyz - camera_pos;
 
     texcoord = in_texcoord_0;
 }

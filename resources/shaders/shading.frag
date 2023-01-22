@@ -3,11 +3,7 @@
 #define NR_POINT_LIGHTS 2
 
 struct PointLight {
-//    vec3 color;
     vec3 position;
-//    float ambient_strength;
-//    float diffuse_strength;
-//    float specular_strength;
 };
 
 uniform vec3 light_pos;
@@ -64,6 +60,9 @@ float calculateLight(PointLight light, vec4 material_properties, vec3 position, 
     vec3 view_direction = normalize(camera_pos - position);
 
     float diffuse = diffuse_magnitude * max(dot(light_dir, normal), 0.0);
-    float specular = specular_magnitude * pow(max(dot(reflection_dir, view_direction), 0.0), specular_exponent);
+    float specular = 0;
+    if (diffuse != 0) {
+        specular = specular_magnitude * pow(max(dot(reflection_dir, view_direction), 0.0), specular_exponent);
+    }
     return diffuse + specular;
 }

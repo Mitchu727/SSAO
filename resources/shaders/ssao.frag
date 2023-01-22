@@ -2,7 +2,7 @@
 
 const int MAX_SSAO_SAMPLES_QUANTITY = 100;
 
-uniform vec3 f_camera_pos;
+uniform vec3 camera_pos;
 uniform mat4 mvp;
 uniform int n_samples;
 uniform vec3 samples[MAX_SSAO_SAMPLES_QUANTITY];
@@ -24,7 +24,7 @@ void main() {
         discard;
     }
 
-    vec3 f_pos = f_camera_pos + f_view_z * view_ray;
+    vec3 f_pos = camera_pos + f_view_z * view_ray;
     vec3 f_norm = texture(g_norm, texcoord).xyz;
     const int noise_size = 32;
     vec2 noise_pos = (1.0 / float(noise_size)) * vec2(

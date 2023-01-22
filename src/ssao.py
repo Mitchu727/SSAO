@@ -184,15 +184,17 @@ class SSAODemo(SSAOWindow):
                            translation=Matrix44.from_translation([-5.0, 0.0, -4.0]),
                            texture=self.football_texture)
 
-        self.render_object(obj=self.sphere,
-                           color=(1,1,0),
-                           scale=Matrix44.from_scale([0.5, 0.5, 0.5]),
-                           translation=Matrix44.from_translation([10., -10., 0.]))
+        # Light 1(for debugging)
+        # self.render_object(obj=self.sphere,
+        #                    color=(1,1,0),
+        #                    scale=Matrix44.from_scale([0.5, 0.5, 0.5]),
+        #                    translation=Matrix44.from_translation([10., -10., 0.]))
 
-        self.render_object(obj=self.sphere,
-                           color=(1,1,0),
-                           scale=Matrix44.from_scale([0.5, 0.5, 0.5]),
-                           translation=Matrix44.from_translation([0., 10., 0.]))
+        # Light 2 (for debugging)
+        # self.render_object(obj=self.sphere,
+        #                    color=(1,1,0),
+        #                    scale=Matrix44.from_scale([0.5, 0.5, 0.5]),
+        #                    translation=Matrix44.from_translation([10., 10., 0.]))
 
         # Dragon
         self.render_object(obj=self.dragon,
@@ -206,7 +208,7 @@ class SSAODemo(SSAOWindow):
         self.render_object(obj=self.teapot,
                            color=(0.6, 0, 1),
                            translation=Matrix44.from_translation([-6.0, 3.0, -3.5]),
-                           # rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
+                           rotation=Matrix44.from_x_rotation(-np.pi / 2) * Matrix44.from_y_rotation(np.pi / 4),
                            scale=Matrix44.from_scale([0.2, 0.2, 0.2]),
                            texture=self.metal_texture)
 
@@ -221,8 +223,7 @@ class SSAODemo(SSAOWindow):
         self.ctx.disable(moderngl.DEPTH_TEST)
         self.ssao_buffer.clear(0.0)
         self.ssao_buffer.use()
-        self.ssao_program["v_camera_pos"].value = self.camera_position
-        self.ssao_program["f_camera_pos"].value = self.camera_position
+        self.ssao_program["camera_pos"].value = self.camera_position
         self.ssao_program["z_offset"].value = self.ssao_z_offset
         self.g_view_z.use(location=0)
         self.g_normal.use(location=1)
@@ -234,9 +235,7 @@ class SSAODemo(SSAOWindow):
         self.ctx.screen.clear(1.0, 1.0, 1.0)
         self.ctx.screen.use()
         self.setup_lights()
-        self.shading_program["v_camera_pos"].value = self.camera_position
         self.shading_program["camera_pos"].value = self.camera_position
-        # self.shading_program["light_pos"].value = self.camera_position
         self.shading_program["material_properties"].value = tuple(self.material_properties)
         self.g_view_z.use(location=0)
         self.g_normal.use(location=1)
