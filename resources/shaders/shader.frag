@@ -62,12 +62,9 @@ vec3 calculateLight(PointLight light) {
     vec3 reflect_direction = reflect(-light_direction, v_norm);
     vec3 view_direction = normalize(view_position - v_vert);
 
-    float diff = max(dot(v_norm, light_direction), 0.0);
-    float spec = max(dot(view_direction, reflect_direction), 0.0);
-
     vec3 ambient_color = light.color * light.ambient_strength;
-    vec3 diffuse_color = diff * light.color * light.diffuse_strength;
-    vec3 specular_color = diff <= 0 ? vec3(0) : pow(spec, 64.) * object_shininess * light.color * light.specular_strength;
+    vec3 diffuse_color = max(dot(v_norm, light_direction), 0.0) * light.color * light.diffuse_strength;
+    vec3 specular_color = max(dot(v_norm, light_direction), 0.0) <= 0 ? vec3(0) : pow(max(dot(view_direction, reflect_direction), 0.0), 64.) * object_shininess * light.color * light.specular_strength;
 
     return clamp(ambient_color + diffuse_color + specular_color, 0.0, 1.0);
 }

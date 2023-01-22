@@ -19,7 +19,7 @@ class SSAODemo(SSAOWindow):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.material_properties = [0.5, 0.5, 0.25, 25.0]
+        self.material_properties = [0.25, 1, 0.5, 64.0]
         self.ssao_z_offset = 0.0
         self.ssao_blur = False
 
@@ -183,6 +183,16 @@ class SSAODemo(SSAOWindow):
                            color=(1, 1, 0),
                            translation=Matrix44.from_translation([-5.0, 0.0, -4.0]),
                            texture=self.football_texture)
+
+        self.render_object(obj=self.sphere,
+                           color=(1,1,0),
+                           scale=Matrix44.from_scale([0.5, 0.5, 0.5]),
+                           translation=Matrix44.from_translation([10., -10., 0.]))
+
+        self.render_object(obj=self.sphere,
+                           color=(1,1,0),
+                           scale=Matrix44.from_scale([0.5, 0.5, 0.5]),
+                           translation=Matrix44.from_translation([0., 10., 0.]))
 
         # Dragon
         self.render_object(obj=self.dragon,
