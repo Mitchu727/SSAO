@@ -1,13 +1,26 @@
-## Screen Space Ambient Occlusion
+# Screen Space Ambient Occlusion
 
-W ramach projektu należy stworzyć program, który będzie renderował złożoną geometrycznie scenę z kilkoma źródłami światła i implementował technikę okluzji otoczenia.
+## How to run
 
-W tym celu należy zaimplementować:
+In order to run the project you need to have `path_to_project/SSAO/src` set as your working directory.
 
-1. Wczytywanie sceny 3d składającej się z wielu różnorodnych oteksturowanych figur geometrycznych
-2. Cieniowanie Phonga
-3. Algorytm Screen space ambient occlusion
-   1. Implementacja algorytmu powinna wykorzystywać zasoby GPU, tj. być zaimplementowana w GLSL
-   2. Scena 3d powinna być przygotowana w taki sposób, aby możliwe było efektywne zaprezentowanie algorytmu
-4. Przełączanie ilości sampli w hemisferze
-5. Kamerę perspektywiczną — możliwość poruszania się po scenie oraz obrotu
+The very next thing is to simply run:
+
+```shell
+python ssao.py   
+```
+
+
+## Steering
+
+You can move the camera throughout the scene using standard `WSAD` key bindings.
+The pitch and yaw are controlled by mouse movements.
+
+Additionally:
+
+- `q` to roll to the right
+- `e` to roll to the left,
+- `space` to move up,
+- `c` to move down,
+- `,` to decrement SSAO samples count by 1,
+- `.` to increment SSAO samples count by 1.
